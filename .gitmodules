@@ -1,0 +1,6 @@
+[submodule "src/lio_sam"]
+	path = src/lio_sam
+	url = git@github.com:dotX-Automation/lio_sam.git
+[submodule "src/dua_robot_localization"]
+	path = src/dua_robot_localization
+	url = git@github.com:dotX-Automation/dua_robot_localization.git
