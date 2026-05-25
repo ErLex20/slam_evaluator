@@ -4,3 +4,6 @@
 [submodule "src/dua_robot_localization"]
 	path = src/dua_robot_localization
 	url = git@github.com:dotX-Automation/dua_robot_localization.git
+[submodule "src/spark_fast_lio"]
+	path = src/spark_fast_lio
+	url = https://github.com/MIT-SPARK/spark-fast-lio.git

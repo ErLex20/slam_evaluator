@@ -34,12 +34,12 @@ def generate_launch_description():
     config = os.path.join(
         get_package_share_directory('slam_evaluator'),
         'config',
-        'lio_sam.yaml'
+        'lio_sam_save.yaml'
     )
     rviz_config = os.path.join(
         get_package_share_directory('slam_evaluator'),
         'rviz',
-        'lio_sam.rviz'
+        'lio_sam_save.rviz'
     )
 
     # Declare launch arguments
@@ -71,29 +71,13 @@ def generate_launch_description():
         # prefix='gdbserver localhost:8081',
         parameters=[config],
         remappings=[
-            ('/dua_tf_server/get_transform', '/dua_tf_server/get_transform'),
-            ('/point_cloud',                 '/kitti/point_cloud'),
-            ('/pose',                        '/dua_tf_server/base_link_in_map'),
+            ('/get_transform',                      '/dua_tf_server/get_transform'),
+            ('/dua_robot_localization/set_pose',    '/ekf_global/set_pose'),
+            ('/point_cloud',                        '/marco/sensors/livox_lidar_driver/point_cloud/deskewed'),
+            ('/odometry',                           '/ekf_global/odometry'),
         ]
     )
     ld.add_action(lio_sam)
-
-    # EKF Local
-    ekf_local = Node(
-        # prefix=['gdbserver localhost:8081'],
-        namespace=ns,
-        package='dua_robot_localization',
-        executable='dua_robot_localization_app',
-        name='ekf_local',
-        emulate_tty=True,
-        shell=True,
-        output='both',
-        parameters=[config],
-        remappings=[
-            ("/dua_tf_server/get_transform", "/dua_tf_server/get_transform"),
-        ]
-    )
-    ld.add_action(ekf_local)
 
     # EKF Global
     ekf_global = Node(
@@ -106,23 +90,10 @@ def generate_launch_description():
         output='both',
         parameters=[config],
         remappings=[
-            ("/dua_tf_server/get_transform", "/dua_tf_server/get_transform"),
+            ("/get_transform",                  "/dua_tf_server/get_transform"),
         ]
     )
     ld.add_action(ekf_global)
-
-    # Static transform publisher: imu_link -> base_link
-    static_tf_imu_to_base = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='static_tf_imu_to_base',
-        arguments=[
-            '-0.8086759', '0.3195559', '-0.7997231',
-            '-0.00741353', '0.00101574', '-0.00037587', '0.99997186',
-            'imu_link', 'base_link'
-        ]
-    )
-    ld.add_action(static_tf_imu_to_base)
 
     rviz = Node(
             package='rviz2',
