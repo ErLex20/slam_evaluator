@@ -28,19 +28,39 @@ ENV DEBIAN_FRONTEND=noninteractive
 # IMAGE SETUP START #
 # lio_sam START #
 WORKDIR /opt
-RUN git clone https://github.com/borglab/gtsam.git && \
+RUN \
+    # GTSAM for Factor Graph
+    git clone --depth 1 --single-branch --branch '4.2' https://github.com/borglab/gtsam.git && \
     cd gtsam && \
-    git checkout 4.2 && \
     mkdir build && \
     cd build && \
     cmake .. \
-        -DGTSAM_USE_SYSTEM_EIGEN=ON \
-        -DGTSAM_BUILD_TESTS=OFF \
-        -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF \
-        -DCMAKE_BUILD_TYPE=Release && \
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+      -DGTSAM_USE_SYSTEM_EIGEN=ON \
+      -DGTSAM_BUILD_TESTS=OFF \
+      -DGTSAM_BUILD_EXAMPLES_ALWAYS=OFF \
+      -DGTSAM_BUILD_WITH_MARCH_NATIVE=ON \
+      -DGTSAM_POSE3_EXPMAP=ON \
+      -DGTSAM_ROT3_EXPMAP=ON && \
     make -j$(nproc --all) && \
     make install && \
-    ldconfig
+    ldconfig && \
+    cd .. && \
+    rm -rf build && \
+    cd .. && \
+    chgrp -R internal /opt/gtsam && \
+    chmod g+rw /opt/gtsam && \
+    git clone --depth 1 --single-branch --branch 'v4.8.1' https://github.com/martinus/unordered_dense.git && \
+    cd unordered_dense && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    cmake --build . --target install && \
+    cd .. && \
+    rm -rf build && \
+    cd .. && \
+    chgrp -R internal /opt/unordered_dense && \
+    chmod g+rw /opt/unordered_dense
 WORKDIR /root
 # lio_sam END #
 # IMAGE SETUP END #
