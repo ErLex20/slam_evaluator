@@ -42,6 +42,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <ctime>
 
 #include "ros2_kitti_publishers/visibility.h"
 #include "ros2_kitti_publishers/WGS84toCartesian.hpp"
@@ -69,18 +70,22 @@ private:
   void on_timer_callback();
 
   void init_file_path();
+  void load_timestamps();
   void create_publishers_data_file_names();
   std::vector<std::string> parse_file_data_into_string_array(std::string file_name, std::string delimiter);
 
   std::string mat_type2encoding(int mat_type);
-  void convert_image_to_msg(sensor_msgs::msg::Image & msg, const std::string path );
+  void convert_image_to_msg(sensor_msgs::msg::Image & msg, const std::string path, const rclcpp::Time & stamp);
 
-  void prepare_navsatfix_msg(std::vector<std::string> &oxts_tokenized_array, sensor_msgs::msg::NavSatFix &msg);
-  void prepare_imu_msg(std::vector<std::string> &oxts_tokenized_array, sensor_msgs::msg::Imu &msg);
-  void prepare_marker_array_msg(std::vector<std::string> &oxts_tokenized_array, visualization_msgs::msg::MarkerArray &msg);
-  void convert_pcl_to_pointcloud2(sensor_msgs::msg::PointCloud2 & msg );
+  void prepare_navsatfix_msg(std::vector<std::string> &oxts_tokenized_array, sensor_msgs::msg::NavSatFix &msg, const rclcpp::Time & stamp);
+  void prepare_imu_msg(std::vector<std::string> &oxts_tokenized_array, sensor_msgs::msg::Imu &msg, const rclcpp::Time & stamp);
+  void prepare_marker_array_msg(std::vector<std::string> &oxts_tokenized_array, visualization_msgs::msg::MarkerArray &msg, const rclcpp::Time & stamp);
+  void convert_pcl_to_pointcloud2(sensor_msgs::msg::PointCloud2 & msg, const rclcpp::Time & stamp);
   
   size_t file_index_;
+
+  std::vector<rclcpp::Time> timestamps_;
+  std::string path_timestamps_;
 
   rclcpp::TimerBase::SharedPtr timer_;
 
