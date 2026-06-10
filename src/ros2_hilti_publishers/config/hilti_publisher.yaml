@@ -1,0 +1,25 @@
+hilti_publisher_node:
+  ros__parameters:
+    # Absolute path to the Hilti .bag file
+    bag_path: "/home/neo/workspace/site2_robot_2.bag"
+
+    # Input topic names as recorded in the robot bag
+    lidar_topic_in: "/rslidar_points"
+    imu_topic_in: "/imu/data"
+
+    # Output topic names (what LIO-SAM / other SLAM will subscribe to)
+    lidar_topic_out: "/hilti/point_cloud"
+    imu_topic_out: "/hilti/imu"
+
+    # Set true to also publish 5x Alphasense camera images
+    publish_cameras: false
+
+    # Playback speed multiplier (1.0 = real-time, 0.5 = half speed)
+    playback_rate: 1.0
+
+    # Publish bag time on /clock so playback consumers can run with use_sim_time.
+    publish_clock: true
+
+    # TF frame IDs embedded in published messages
+    lidar_frame_id: "rslidar"
+    imu_frame_id: "xsens_imu_link"

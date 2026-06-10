@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot name="hilti_trailblazer" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- base_link is the gravity-aligned body frame, centered on the LiDAR
+       origin: z up, x forward. The BPearl is mounted with its dome axis
+       horizontal (LiDAR z = body x) and its x axis pointing up (= body z). -->
+  <link name="base_link"/>
+
+  <joint name="rslidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="rslidar"/>
+    <origin xyz="0.0 0.0 0.0" rpy="3.14159265358979312 -1.57079632679489656 0"/>
+  </joint>
+  <link name="rslidar"/>
+
+  <!-- base_link->rslidar composed with T_rslidar_xsens_imu_link from the
+       HILTI robot calibration (lidar0/T_here_imu0). -->
+  <joint name="xsens_imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="xsens_imu_link"/>
+    <origin
+      xyz="0.006109253103427925 0.010899820828818012 -0.13406141062872667"
+      rpy="-0.09671231872443545 -1.5356066844153258 0.10532696681621778"/>
+  </joint>
+  <link name="xsens_imu_link"/>
+
+</robot>
