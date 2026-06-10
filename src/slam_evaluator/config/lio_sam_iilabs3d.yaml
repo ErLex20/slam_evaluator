@@ -1,0 +1,235 @@
+# IILABS3D benchmark (Livox Mid-360, nav_a_diff sequences).
+#
+# Bag topics:
+#   /eve/lidar3d    sensor_msgs/PointCloud2 (x, y, z, intensity, tag, line, timestamp)
+#   /eve/imu/data   sensor_msgs/Imu, frame eve/imu_link (external IMU, in bag TF)
+#   /eve/livox/imu  sensor_msgs/Imu, frame livox_frame (NOT in bag TF, unused)
+#   /eve/odom       nav_msgs/Odometry, eve/odom -> eve/base_footprint (wheel odometry)
+#   /tf, /tf_static eve/odom -> eve/base_footprint -> eve/base_link -> eve/lidar3d, eve/imu_link
+#
+# The bag provides all sensor extrinsics via TF; the launch file only adds a
+# static identity map -> eve/odom to complete the tree.
+
+/dua_tf_server:
+  ros__parameters:
+    dua:
+      tf_server:
+        get_transform: false
+        transform_pose: false
+        wait_servers: false
+    fixed_frame: map
+    poses_pub_period: 50
+    source_frames:
+      - eve/base_link
+    target_frames:
+      - map
+    use_sim_time: true
+
+/lio_sam:
+  ros__parameters:
+    autostart: true
+    cpu:
+      feature_extraction: [0, 1, 2, 3]
+      map_optimization:   [4, 5, 6, 7]
+      loop_closure:       [8, 9, 10, 11]
+    debug:
+      features:
+        edges: true
+        surfaces: true
+        normals: true
+      loop_closure:
+        correspondences: true
+        scan: true
+      mapping:
+        all_points: true
+        normals: true
+        path: true
+    dua:
+      tf_server:
+        get_transform: true
+        transform_pose: false
+        wait_servers: true
+    features:
+      k_neighbors: 5
+      size:
+        ivox: 0.2
+        leaf: 0.1
+    loop_closure:
+      correction:
+        thr:
+          translation: 0.01
+          rotation: 0.02
+    mapping:
+      global_map:
+        initial_pose: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        leaf_size: 0.01
+        path: ""
+        pose_density: 1.0
+        search_radius: 100.0
+        set_pose: false
+      history_keyframe:
+        fitness_score: 0.3
+        search_num: 30
+        search_radius: 10.0
+        search_time_diff: 60.0
+      leaf_size:
+        edge: 0.2
+        surface: 0.2
+      min:
+        edge: 10
+        surface: 100
+      rpy_weight: 0.0
+      surrounding_keyframe:
+        adding_threshold:
+          angle: 0.5
+          distance: 0.5
+        density: 0.5
+        search_radius: 30.0
+    pose_fix:
+      threshold:
+        covariance: 1.0
+        distance: 5.0
+      use_elevation: true
+    sensor:
+      range:
+        max: 40.0   # Livox Mid-360 (40 m @ 10% reflectivity)
+        min: 0.5    # keep robot body and near-field returns out
+    tf:
+      frame:
+        global: "map"
+        local: "eve/odom"
+      prefix: "eve/"
+      publish: false
+    use_sim_time: true
+    verbose: true
+
+/ekf_global:
+  ros__parameters:
+    autostart: true
+    use_sim_time: true
+    verbose: false
+    worker_cpu: -1
+    dua:
+      tf_server:
+        get_transform: true
+        transform_pose: false
+        wait_servers: true
+
+    filter_type: ekf
+
+    smooth_lagged_data: true
+    history_length: 0.5
+    process_noise_covariance: [0.00001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0, 0.00001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0, 0.001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0, 0.001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0, 0.001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0, 0.00001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001,  0.0,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001,  0.0,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001,  0.0,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001,  0.0,
+                                0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.001]
+    dynamic_process_noise_covariance: false
+    initial_estimate_covariance: [0.0001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0, 0.01,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0, 0.01,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0, 0.01,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0, 0.0001,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01,  0.0,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01,  0.0,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01,  0.0,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01,  0.0,
+                                   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0, 0.01]
+    predict_to_current_time: true
+
+    map_frame: map
+    world_frame: map
+    odom_frame: map
+    base_frame: eve/base_link
+    base_footprint_frame: eve/base_link
+    base_link_frame: eve/base_link
+    base_link_frame_output: eve/base_link
+
+    x_correction: 1.0
+    y_correction: 1.0
+
+    # The bag already publishes eve/odom -> eve/base_footprint -> eve/base_link;
+    # publishing map -> eve/base_link here would give eve/base_link two parents.
+    publish_tf: false
+    publish_acceleration: false
+    permit_corrected_publication: false
+
+    tf_time_offset: 0.0
+    tf_timeout: 0.0
+    frequency: 30.0
+    sensor_timeout: 0.2
+
+    initial_state: [0.0, 0.0, 0.0,          # x, y, z
+                    0.0, 0.0, 0.0,          # R, P ,Y
+                    0.0, 0.0, 0.0,          # vx, vy, vz
+                    0.0, 0.0, 0.0,          # vR, vP, vY
+                    0.0, 0.0, 0.0]          # ax, ay, az
+    correct_state: [true, true, true,
+                    true, true, true]
+    acceleration_limits: [1.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    acceleration_gains: [1.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    deceleration_limits: [1.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    deceleration_gains: [1.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+    gravitational_acceleration: 9.81
+
+    control:
+      topic_name: /cmd_vel
+      config: [true, true, false, false, false, true]
+      use: false
+      stamped: false
+      timeout: 0.2
+
+    # Wheel odometry (diff drive) | velocities only; vy/vz act as
+    # nonholonomic zero constraints, vyaw from the wheel encoders.
+    odom0:
+      topic_name: /eve/odom
+      config: [false, false, false,        # [x_pos   , y_pos    , z_pos,
+               false, false, false,        #  roll    , pitch    , yaw,
+               true,  true,  true,         #  x_vel   , y_vel    , z_vel,
+               false, false, true,         #  roll_vel, pitch_vel, yaw_vel,
+               false, false, false]        #  x_accel , y_accel  , z_accel]
+      differential: false
+      relative: false
+      dynamic_tf: false
+
+    # External IMU (eve/imu_link, in bag TF) | gyroscope + planar accelerometer.
+    # Orientation is not fused: it is magnetometer-based and not aligned with
+    # the map frame.
+    imu0:
+      topic_name: /eve/imu/data
+      config: [false, false, false,        # [x_pos   , y_pos    , z_pos,
+               false, false, false,        #  roll    , pitch    , yaw,
+               false, false, false,        #  x_vel   , y_vel    , z_vel,
+               true,  true,  true,         #  roll_vel, pitch_vel, yaw_vel,
+               true,  true,  false]        #  x_accel , y_accel  , z_accel]
+      differential: false
+      relative: false
+      dynamic_tf: false
+      remove_gravitational_acceleration: true
+
+    # LIO-SAM pose output | x, y, z, roll, pitch, yaw
+    pose0:
+      topic_name: /lio_sam/map_optimization/pose
+      config: [true, true, true,           # [x_pos   , y_pos    , z_pos,
+               true, true, true,           #  roll    , pitch    , yaw,
+               false, false, false,        #  x_vel   , y_vel    , z_vel,
+               false, false, false,        #  roll_vel, pitch_vel, yaw_vel,
+               false, false, false]        #  x_accel , y_accel  , z_accel]
+      differential: false
+      relative: false
+      dynamic_tf: false

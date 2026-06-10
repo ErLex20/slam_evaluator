@@ -1,0 +1,23 @@
+iilabs3d_gt_publisher:
+  ros__parameters:
+    # Absolute path to the TUM ground truth file (timestamp x y z qx qy qz qw,
+    # timestamps in bag epoch time)
+    gt_file: "/home/neo/workspace/logs/iilabs/iilabs3d_dataset/benchmark/livox_mid-360/nav_a_diff/ground_truth.tum"
+
+    # Frame the ground truth poses are expressed in
+    frame_id: "map"
+
+    # Output topics
+    pose_topic_out: "/iilabs3d/ground_truth/pose"
+    path_topic_out: "/iilabs3d/ground_truth/path"
+
+    # Also broadcast TF map -> child_frame_id at the ground truth pose
+    publish_tf: true
+    child_frame_id: "eve/base_link_gt"
+
+    # Publishing rate [Hz] and path decimation [m]
+    publish_rate: 10.0
+    path_min_distance: 0.05
+
+    # Ground truth replay is driven by /clock from `ros2 bag play --clock`
+    use_sim_time: true
