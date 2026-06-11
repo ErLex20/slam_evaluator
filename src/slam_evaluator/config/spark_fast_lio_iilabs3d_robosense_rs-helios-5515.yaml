@@ -1,0 +1,85 @@
+# IILABS3D benchmark, RoboSense RS-Helios-5515 sequences.
+#
+# Bag topics:
+#   /eve/lidar3d    sensor_msgs/PointCloud2 (x, y, z, intensity, ring, timestamp)
+#                   rslidar_sdk format, 'timestamp' is absolute, float64, s
+#   /eve/imu/data   sensor_msgs/Imu, frame eve/imu_link (external IMU, 400 Hz, in bag TF)
+#   /eve/odom       nav_msgs/Odometry, eve/odom -> eve/base_footprint (wheel odometry, unused)
+#   /tf, /tf_static eve/odom -> eve/base_footprint -> eve/base_link -> eve/lidar3d, eve/imu_link
+#
+# SPARK Fast-LIO reads the base -> LiDAR extrinsics from the bag TF
+# (eve/base_link -> eve/lidar3d); the LiDAR -> IMU extrinsics must be given
+# here (mapping.extrinsic_T/R). From calib_robosense_rs-helios-5515.yaml both
+# sensor frames are axis-aligned with eve/base_link, LiDAR at z = 0.4777 and
+# IMU at z = 0.19996, hence LiDAR in IMU frame = [0, 0, 0.27774], identity
+# rotation.
+#
+# CAVEAT: spark_fast_lio has no handler for the rslidar_sdk PointCloud2
+# format, so the Velodyne handler is used. The rslidar 'timestamp' field
+# (float64, absolute) does not match the Velodyne 'time' field (float32,
+# relative), so PCL warns about it and fills zeros; per-point times fall back
+# to the azimuth-based estimate, which is the standard FAST-LIO approximation
+# for spinning LiDARs without per-point timestamps.
+
+/spark_fast_lio:
+  ros__parameters:
+    use_sim_time: true
+    verbose: false
+
+    common:
+      map_frame: "map"
+      base_frame: "eve/base_link"
+      lidar_frame: "eve/lidar3d"
+      imu_frame: "eve/imu_link"
+      # Odometry, path and TF report the eve/base_link pose in map, i.e. the
+      # same frame as the ground truth trajectory.
+      visualization_frame: "base"
+      time_sync_en: false
+
+    preprocess:
+      lidar_type: 2               # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster (see CAVEAT above)
+      scan_line: 32
+      scan_rate: 10               # Hz
+      timestamp_unit: 0           # unused: no 'time' field, azimuth-based fallback
+      blind: 0.5                  # keep robot body and near-field returns out (m)
+      blind_for_human_pilots: 0.0 # disable the Kimera-Multi human-pilot rejection zone
+
+    mapping:
+      # External IMU (eve/imu/data) noise densities from the calibration file:
+      # acc 0.01, gyr 0.0007; keep the standard, conservative FAST-LIO values.
+      acc_cov: 0.1
+      gyr_cov: 0.1
+      b_acc_cov: 0.0001
+      b_gyr_cov: 0.0001
+      fov_degree: 180.0
+      det_range: 150.0            # RS-Helios-5515 maximum range
+      extrinsic_est_en: false
+      # LiDAR pose in the IMU frame (eve/imu_link -> eve/lidar3d)
+      extrinsic_T: [0.0, 0.0, 0.27774]
+      extrinsic_R: [1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 0.0, 1.0]
+
+    # Keep the map frame anchored to the initial base pose, like the other
+    # SLAM systems under evaluation (no gravity-based map rotation at init).
+    gravity_alignment:
+      enable_gravity_alignment: false
+
+    filter_size_map: 0.5
+    point_filter_num_for_preprocessing: 1
+    point_filter_num: 3
+    max_iteration: 3
+    cube_side_length: 1000.0
+    extrinsics_timeout_s: 0.0     # wait indefinitely for the bag /tf_static
+
+    publish:
+      path_en: true
+      scan_publish_en: true
+      dense_publish_en: true
+      scan_lidarframe_pub_en: false
+      scan_bodyframe_pub_en: false
+      scan_baseframe_pub_en: false
+
+    pcd_save:
+      pcd_save_en: false
+      interval: -1

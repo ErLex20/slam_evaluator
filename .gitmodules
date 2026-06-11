@@ -7,3 +7,6 @@
 [submodule "src/spark_fast_lio"]
 	path = src/spark_fast_lio
 	url = https://github.com/MIT-SPARK/spark-fast-lio.git
+[submodule "src/FAST_LIO"]
+	path = src/FAST_LIO
+	url = git@github.com:ErLex20/FAST_LIO.git
