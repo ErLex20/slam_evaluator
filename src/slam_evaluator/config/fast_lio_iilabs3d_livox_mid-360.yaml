@@ -1,0 +1,71 @@
+# IILABS3D benchmark, Livox Mid-360 sequences.
+#
+# Bag topics:
+#   /eve/lidar3d    sensor_msgs/PointCloud2 (x, y, z, intensity, tag, line, timestamp)
+#                   livox_ros_driver2 format
+#   /eve/imu/data   sensor_msgs/Imu, frame eve/imu_link (external IMU, 400 Hz)
+#
+# lidar_type 4 (MID360) parses the livox PointCloud2 format using the 'line'
+# field; per-point times are estimated from the azimuth (the 'timestamp'
+# field is ignored by the handler). The bag's 'intensity' field does not
+# match the handler's 'reflectivity' name, so intensities read as 0
+# (harmless for registration).
+#
+# LiDAR -> IMU extrinsics from calib_livox_mid-360.yaml: both frames are
+# axis-aligned with eve/base_link, LiDAR at z = 0.4612, IMU at z = 0.19996.
+
+/**:
+  ros__parameters:
+    use_sim_time: true
+
+    # FAST-LIO2 original parameters (fast_lio config/mid360.yaml); only the
+    # topics, lidar_type and extrinsics are adapted to IILABS3D.
+    feature_extract_enable: false
+    point_filter_num: 3
+    max_iteration: 3
+    filter_size_surf: 0.5
+    filter_size_map: 0.5
+    cube_side_length: 1000.0
+    runtime_pos_log_enable: false
+    map_file_path: "./fast_lio_iilabs3d.pcd"
+
+    common:
+      lid_topic: "/eve/lidar3d"
+      imu_topic: "/eve/imu/data"
+      time_sync_en: false
+      time_offset_lidar_to_imu: 0.0
+
+    preprocess:
+      lidar_type: 4          # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster, 4 Livox PointCloud2
+      scan_line: 4
+      scan_rate: 10
+      timestamp_unit: 3      # unused by the MID360 handler (azimuth-based offsets)
+      blind: 0.5
+
+    mapping:
+      acc_cov: 0.1
+      gyr_cov: 0.1
+      b_acc_cov: 0.0001
+      b_gyr_cov: 0.0001
+      fov_degree: 360.0
+      det_range: 100.0
+      extrinsic_est_en: false
+
+      # LiDAR pose in IMU frame.
+      # From calib_livox_mid-360.yaml:
+      # LiDAR z = 0.4612, IMU z = 0.19996 -> 0.26124 m.
+      extrinsic_T: [0.0, 0.0, 0.26124]
+      extrinsic_R: [1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 0.0, 1.0]
+
+    publish:
+      path_en: true
+      scan_publish_en: true
+      dense_publish_en: true
+      scan_bodyframe_pub_en: false
+      map_en: false
+
+    pcd_save:
+      pcd_save_en: false
+      interval: -1

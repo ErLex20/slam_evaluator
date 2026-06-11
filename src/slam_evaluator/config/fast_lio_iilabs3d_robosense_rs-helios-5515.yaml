@@ -1,0 +1,73 @@
+# IILABS3D benchmark, RoboSense RS-Helios-5515 sequences.
+#
+# Bag topics:
+#   /eve/lidar3d    sensor_msgs/PointCloud2 (x, y, z, intensity, ring, timestamp)
+#                   rslidar_sdk format
+#   /eve/imu/data   sensor_msgs/Imu, frame eve/imu_link (external IMU, 400 Hz)
+#
+# FAST-LIO has no RoboSense handler, so the Velodyne one is used. The rslidar
+# 'timestamp' field (float64, absolute) does not match the Velodyne 'time'
+# field (float32, relative), so PCL warns about it and fills zeros; per-point
+# times fall back to the azimuth-based estimate using 'ring', the standard
+# FAST-LIO approximation for spinning LiDARs without per-point timestamps.
+#
+# LiDAR -> IMU extrinsics from calib_robosense_rs-helios-5515.yaml: both
+# frames are axis-aligned with eve/base_link, LiDAR at z = 0.4777, IMU at
+# z = 0.19996.
+
+/**:
+  ros__parameters:
+    use_sim_time: true
+
+    # FAST-LIO2 original parameters (fast_lio config/velodyne.yaml, the
+    # closest spinning-LiDAR config); only the topics, scan_line and
+    # extrinsics are adapted to IILABS3D.
+    feature_extract_enable: false
+    point_filter_num: 4
+    max_iteration: 3
+    filter_size_surf: 0.5
+    filter_size_map: 0.5
+    cube_side_length: 1000.0
+    runtime_pos_log_enable: false
+    map_file_path: "./fast_lio_iilabs3d.pcd"
+
+    common:
+      lid_topic: "/eve/lidar3d"
+      imu_topic: "/eve/imu/data"
+      time_sync_en: false
+      time_offset_lidar_to_imu: 0.0
+
+    preprocess:
+      lidar_type: 2          # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster, 4 Livox PointCloud2
+      scan_line: 32
+      scan_rate: 10
+      timestamp_unit: 0      # unused: no 'time' field, azimuth-based fallback
+      blind: 2.0
+
+    mapping:
+      acc_cov: 0.1
+      gyr_cov: 0.1
+      b_acc_cov: 0.0001
+      b_gyr_cov: 0.0001
+      fov_degree: 360.0
+      det_range: 100.0
+      extrinsic_est_en: false
+
+      # LiDAR pose in IMU frame.
+      # From calib_robosense_rs-helios-5515.yaml:
+      # LiDAR z = 0.4777, IMU z = 0.19996 -> 0.27774 m.
+      extrinsic_T: [0.0, 0.0, 0.27774]
+      extrinsic_R: [1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 0.0, 1.0]
+
+    publish:
+      path_en: true
+      scan_publish_en: true
+      dense_publish_en: true
+      scan_bodyframe_pub_en: false
+      map_en: false
+
+    pcd_save:
+      pcd_save_en: false
+      interval: -1

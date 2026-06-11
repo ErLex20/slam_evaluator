@@ -1,0 +1,55 @@
+/**:
+  ros__parameters:
+    use_sim_time: true
+
+    # FAST-LIO2 original parameters (fast_lio config/velodyne.yaml); only the
+    # topics, timestamp unit and extrinsics are adapted to IILABS3D.
+    feature_extract_enable: false
+    point_filter_num: 4
+    max_iteration: 3
+    filter_size_surf: 0.5
+    filter_size_map: 0.5
+    cube_side_length: 1000.0
+    runtime_pos_log_enable: false
+    map_file_path: "./fast_lio_iilabs3d.pcd"
+
+    common:
+      lid_topic: "/eve/lidar3d"
+      imu_topic: "/eve/imu/data"
+      time_sync_en: false
+      time_offset_lidar_to_imu: 0.0
+
+    preprocess:
+      lidar_type: 2          # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster, 4 Livox PointCloud2
+      scan_line: 16
+      scan_rate: 10
+      timestamp_unit: 0      # 'time' field of /eve/lidar3d is in seconds
+      blind: 2.0
+
+    mapping:
+      acc_cov: 0.1
+      gyr_cov: 0.1
+      b_acc_cov: 0.0001
+      b_gyr_cov: 0.0001
+      fov_degree: 360.0
+      det_range: 100.0
+      extrinsic_est_en: false
+
+      # LiDAR pose in IMU frame.
+      # From calib_velodyne_vlp-16.yaml:
+      # LiDAR z = 0.4519, IMU z = 0.19996 -> 0.25194 m.
+      extrinsic_T: [0.0, 0.0, 0.25194]
+      extrinsic_R: [1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 0.0, 1.0]
+
+    publish:
+      path_en: true
+      scan_publish_en: true
+      dense_publish_en: true
+      scan_bodyframe_pub_en: false
+      map_en: false
+
+    pcd_save:
+      pcd_save_en: false
+      interval: -1
