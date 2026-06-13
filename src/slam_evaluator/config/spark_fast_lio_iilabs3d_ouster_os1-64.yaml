@@ -2,7 +2,11 @@
 #
 # Bag topics:
 #   /eve/ouster/points sensor_msgs/PointCloud2 (x, y, z, intensity, t, reflectivity,
-#                      ring, ambient, range), ouster_ros format, 't' is relative, uint32, ns
+#                      ring, ambient, range), ouster_ros format, 't' is relative, uint32, ns.
+#                      2048x64 @ 10 Hz; ~8% of the points are NaN (they pass the blind
+#                      check but are rejected downstream); 'ring' is uint16 while the
+#                      preprocessor expects uint8, so PCL skips it with a per-scan
+#                      warning - harmless, ring is unused without feature extraction.
 #   /eve/imu/data      sensor_msgs/Imu, frame eve/imu_link (external IMU, 400 Hz, in bag TF)
 #   /eve/ouster/imu    sensor_msgs/Imu, frame eve/os_imu (built-in IMU, 100 Hz, unused)
 #   /eve/odom          nav_msgs/Odometry, eve/odom -> eve/base_footprint (wheel odometry, unused)
@@ -34,7 +38,10 @@
       scan_line: 64
       scan_rate: 10               # Hz
       timestamp_unit: 3           # 't' field of /eve/ouster/points is in nanoseconds
-      blind: 4                  # keep robot body and near-field returns out (m)
+      # Indoor sequences: the bag median range is 3.7 m and 55% of the points
+      # are closer than 4 m, so the upstream Ouster value (blind: 4) discards
+      # most of the scan. Robot-body returns stay below ~1 m (1% of points).
+      blind: 0.8
       blind_for_human_pilots: 0.0 # disable the Kimera-Multi human-pilot rejection zone
 
     mapping:
@@ -44,8 +51,8 @@
       gyr_cov: 0.1
       b_acc_cov: 0.0001
       b_gyr_cov: 0.0001
-      fov_degree: 180.0
-      det_range: 150.0            # OS1-64 maximum range
+      fov_degree: 360.0
+      det_range: 120.0            # OS1-64 maximum range
       extrinsic_est_en: false
       # LiDAR pose in the IMU frame (eve/imu_link -> eve/os_sensor)
       extrinsic_T: [0.0, 0.0, 0.23674]

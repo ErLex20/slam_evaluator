@@ -1,8 +1,16 @@
 """
-LIO-SAM launch file for the IILABS3D dataset (Livox Mid-360 benchmark).
+LIO-SAM launch file for the IILABS3D dataset.
+
+The 'sensor' argument selects the sequence directory and the point cloud
+topic; all sensors share config/lio_sam_iilabs3d.yaml (see its header for the
+Ouster-specific parameters):
+  - livox_mid_360            -> sensor:=livox_mid-360
+  - ouster_os1_64            -> sensor:=ouster_os1-64
+  - robosense_rs_helios_5515 -> sensor:=robosense_rs-helios-5515
+  - velodyne_vlp_16          -> sensor:=velodyne_vlp-16
 
 All sensor extrinsics come from the bag's /tf and /tf_static
-(eve/odom -> eve/base_footprint -> eve/base_link -> eve/lidar3d, eve/imu_link);
+(eve/odom -> eve/base_footprint -> eve/base_link -> LiDAR frame, eve/imu_link);
 only a static identity map -> eve/odom is added to complete the tree.
 
 June 2026
@@ -14,7 +22,11 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (
+    LaunchConfiguration,
+    PathJoinSubstitution,
+    PythonExpression,
+)
 from launch_ros.actions import Node
 
 
@@ -28,6 +40,14 @@ def generate_launch_description():
         'config',
         'lio_sam_iilabs3d.yaml'
     )
+
+    # The Ouster sequences keep the driver's original topic name; all the
+    # other sensors are recorded as /eve/lidar3d.
+    lidar_topic = PythonExpression([
+        "'/eve/ouster/points' if '",
+        LaunchConfiguration('sensor'),
+        "' == 'ouster_os1-64' else '/eve/lidar3d'",
+    ])
 
     rviz_config = os.path.join(
         pkg_share,
@@ -151,7 +171,7 @@ def generate_launch_description():
         parameters=[config],
         remappings=[
             ('/get_transform', '/dua_tf_server/get_transform'),
-            ('/point_cloud', '/eve/lidar3d'),
+            ('/point_cloud', lidar_topic),
             ('/odometry', '/ekf_global/odometry'),
         ]
     )

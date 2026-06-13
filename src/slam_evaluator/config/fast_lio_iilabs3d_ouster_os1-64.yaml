@@ -2,8 +2,12 @@
   ros__parameters:
     use_sim_time: true
 
-    # FAST-LIO2 original parameters (fast_lio config/ouster64.yaml); only the
-    # topics, timestamp unit and extrinsics are adapted to IILABS3D.
+    # FAST-LIO2 original parameters (fast_lio config/ouster64.yaml); the topics,
+    # timestamp unit, extrinsics and blind distance are adapted to IILABS3D.
+    # Bag: /eve/ouster/points 2048x64 @ 10 Hz, 't' relative uint32 ns;
+    # /eve/imu/data 400 Hz in frame eve/imu_link. ~8% of the points are NaN and
+    # 'ring' is uint16 (PCL warns once per scan, harmless without feature
+    # extraction).
     feature_extract_enable: false
     point_filter_num: 3
     max_iteration: 3
@@ -20,11 +24,14 @@
       time_offset_lidar_to_imu: 0.0
 
     preprocess:
-      lidar_type: 3          # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster, 4 Livox PointCloud2
+      lidar_type: 3          # 1 Livox Avia, 2 Velodyne, 3 Ouster, 4 Livox MID360
       scan_line: 64
       scan_rate: 10
       timestamp_unit: 3      # 't' field of /eve/ouster/points is in nanoseconds
-      blind: 4.0
+      # Indoor sequences: the bag median range is 3.7 m and 55% of the points
+      # are closer than 4 m, so the upstream ouster64.yaml value (blind: 4)
+      # discards most of the scan. Robot-body returns stay below ~1 m.
+      blind: 0.8
 
     mapping:
       acc_cov: 0.1
@@ -32,7 +39,7 @@
       b_acc_cov: 0.0001
       b_gyr_cov: 0.0001
       fov_degree: 360.0
-      det_range: 150.0
+      det_range: 120.0       # OS1-64 maximum range
       extrinsic_est_en: false
 
       # LiDAR pose in the IMU frame (eve/imu_link -> eve/os_sensor)

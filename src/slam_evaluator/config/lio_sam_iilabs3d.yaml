@@ -9,6 +9,14 @@
 #
 # The bag provides all sensor extrinsics via TF; the launch file only adds a
 # static identity map -> eve/odom to complete the tree.
+#
+# Ouster OS1-64 sequences (sensor:=ouster_os1-64): the point cloud is
+# /eve/ouster/points (ouster_ros format, frame eve/os_sensor, 2048x64 @ 10 Hz,
+# ~8% NaN points rejected by the range filter) - the launch file remaps it
+# automatically. Only x/y/z/intensity are used, so the different point fields
+# need no changes here. To match the sensor, adjust below:
+#   sensor.range.max: 120.0   # OS1-64 maximum range (Mid-360: 40 m)
+#   sensor.range.min: 0.8     # robot-body returns stay below ~1 m
 
 /dua_tf_server:
   ros__parameters:
