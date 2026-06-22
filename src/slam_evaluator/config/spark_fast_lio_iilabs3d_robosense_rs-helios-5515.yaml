@@ -14,12 +14,12 @@
 # IMU at z = 0.19996, hence LiDAR in IMU frame = [0, 0, 0.27774], identity
 # rotation.
 #
-# CAVEAT: spark_fast_lio has no handler for the rslidar_sdk PointCloud2
-# format, so the Velodyne handler is used. The rslidar 'timestamp' field
-# (float64, absolute) does not match the Velodyne 'time' field (float32,
-# relative), so PCL warns about it and fills zeros; per-point times fall back
-# to the azimuth-based estimate, which is the standard FAST-LIO approximation
-# for spinning LiDARs without per-point timestamps.
+# The cloud is decoded by abs_timestamp_handler (lidar_type 5, ROBOSENSE),
+# which reads the absolute per-point 'timestamp' field (float64, s) and
+# converts it to a per-point offset from the start of the scan. This uses the
+# sensor's real per-point times instead of the Velodyne handler's azimuth-based
+# estimate (the rslidar 'timestamp' is named/typed differently from the
+# Velodyne 'time' field, so the Velodyne handler could not read it).
 
 /spark_fast_lio:
   ros__parameters:
@@ -37,10 +37,10 @@
       time_sync_en: false
 
     preprocess:
-      lidar_type: 2               # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster (see CAVEAT above)
+      lidar_type: 5               # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster, 5 RoboSense, 6 Livox PCL2
       scan_line: 32
       scan_rate: 10               # Hz
-      timestamp_unit: 0           # unused: no 'time' field, azimuth-based fallback
+      timestamp_unit: 0           # 'timestamp' field of /eve/lidar3d is absolute, in seconds
       blind: 0.5                  # keep robot body and near-field returns out (m)
       blind_for_human_pilots: 0.0 # disable the Kimera-Multi human-pilot rejection zone
 

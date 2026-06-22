@@ -14,12 +14,12 @@
 # frames are axis-aligned with eve/base_link, LiDAR at z = 0.4612 and IMU at
 # z = 0.19996, hence LiDAR in IMU frame = [0, 0, 0.26124], identity rotation.
 #
-# CAVEAT: spark_fast_lio has no handler for the livox_ros_driver2 PointCloud2
-# format, so the Velodyne handler is used. Its 'time' and 'ring' fields are
-# missing from the bag clouds (PCL warns about them and fills zeros), hence
-# per-point times fall back to the azimuth-based estimate, which is only an
-# approximation for the Mid-360's non-repetitive scan pattern. Expect
-# degraded motion de-skewing on this sensor.
+# The cloud is decoded by abs_timestamp_handler (lidar_type 6, LIVOX_PCL2),
+# which reads the absolute per-point 'timestamp' field (float64, ns) and
+# converts it to a per-point offset from the start of the scan. This gives
+# correct motion de-skewing for the Mid-360's non-repetitive pattern, unlike
+# the Velodyne handler (which needs 'time'/'ring' fields the Livox cloud does
+# not carry and otherwise falls back to a meaningless azimuth estimate).
 
 /spark_fast_lio:
   ros__parameters:
@@ -37,10 +37,10 @@
       time_sync_en: false
 
     preprocess:
-      lidar_type: 2               # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster (see CAVEAT above)
+      lidar_type: 6               # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster, 5 RoboSense, 6 Livox PCL2
       scan_line: 4
       scan_rate: 10               # Hz
-      timestamp_unit: 0           # unused: no 'time' field, azimuth-based fallback
+      timestamp_unit: 3           # 'timestamp' field of /eve/lidar3d is absolute, in nanoseconds
       blind: 0.5                  # keep robot body and near-field returns out (m)
       blind_for_human_pilots: 0.0 # disable the Kimera-Multi human-pilot rejection zone
 

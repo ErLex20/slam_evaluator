@@ -28,10 +28,14 @@
       time_sync_en: false
 
     preprocess:
-      lidar_type: 2               # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster
+      lidar_type: 2               # 1 Livox CustomMsg, 2 Velodyne, 3 Ouster, 5 RoboSense, 6 Livox PCL2
       scan_line: 16
       scan_rate: 10               # Hz
-      timestamp_unit: 0           # 'time' field of /eve/lidar3d is in seconds
+      # 'time' field is in seconds. These (rosbags-converted) sequences stamp
+      # the header at scan END, so 'time' runs ~-0.1..0; velodyne_handler
+      # re-references it to the first point, so de-skewing and lidar_beg_time
+      # stay correct (no more "curvature should be close to 100" warnings).
+      timestamp_unit: 0
       blind: 2.0
       blind_for_human_pilots: 0.0 # disable the Kimera-Multi human-pilot rejection zone
 
