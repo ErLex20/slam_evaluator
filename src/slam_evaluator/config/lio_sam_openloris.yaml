@@ -80,7 +80,7 @@
         fitness_score: 0.3
         search_num: 30
         search_radius: 10.0
-        search_time_diff: 60.0
+        search_time_diff: 600.0
       leaf_size:
         edge: 0.1
         surface: 0.1
@@ -101,7 +101,7 @@
       use_elevation: true
     sensor:
       range:
-        max: 40.0   # D400 reliable range ceiling
+        max: 5.0   # D400 reliable range ceiling
         min: 0.3   # keep robot body and close-range noise out
     tf:
       frame:
@@ -205,10 +205,10 @@
     # vy/vz act as nonholonomic zero constraints, vx/vyaw from wheel encoders.
     odom0:
       topic_name: /openloris/odom
-      config: [true, true, false,        # [x_pos   , y_pos    , z_pos,
-               false, false, true,        #  roll    , pitch    , yaw,
-               true,  true,  false,         #  x_vel   , y_vel    , z_vel,
-               false, false, true,         #  roll_vel, pitch_vel, yaw_vel,
+      config: [false, false, false,        # [x_pos   , y_pos    , z_pos,
+               false, false, false,        #  roll    , pitch    , yaw,
+               true, true, true,           #  x_vel   , y_vel    , z_vel,
+               true, true, true,           #  roll_vel, pitch_vel, yaw_vel,
                false, false, false]        #  x_accel , y_accel  , z_accel]
       differential: false
       relative: false
@@ -222,20 +222,20 @@
     #            false, false, false,        #  roll    , pitch    , yaw,
     #            false, false, false,        #  x_vel   , y_vel    , z_vel,
     #            true,  true,  true,         #  roll_vel, pitch_vel, yaw_vel,
-    #            true,  true,  true]        #  x_accel , y_accel  , z_accel]
+    #            true,  true,  true]         #  x_accel , y_accel  , z_accel]
     #   differential: false
     #   relative: false
     #   dynamic_tf: false
     #   remove_gravitational_acceleration: true
 
     # LIO-SAM pose output | full 6-DOF absolute corrections.
-    pose0:
-      topic_name: /lio_sam/map_optimization/pose
-      config: [true, true, true,           # [x_pos   , y_pos    , z_pos,
-               true, true, true,           #  roll    , pitch    , yaw,
-               false, false, false,        #  x_vel   , y_vel    , z_vel,
-               false, false, false,        #  roll_vel, pitch_vel, yaw_vel,
-               false, false, false]        #  x_accel , y_accel  , z_accel]
-      differential: false
-      relative: false
-      dynamic_tf: false
+    # pose0:
+    #   topic_name: /lio_sam/map_optimization/pose
+    #   config: [true, true, true,           # [x_pos   , y_pos    , z_pos,
+    #            true, true, true,           #  roll    , pitch    , yaw,
+    #            false, false, false,        #  x_vel   , y_vel    , z_vel,
+    #            false, false, false,        #  roll_vel, pitch_vel, yaw_vel,
+    #            false, false, false]        #  x_accel , y_accel  , z_accel]
+    #   differential: false
+    #   relative: false
+    #   dynamic_tf: false
