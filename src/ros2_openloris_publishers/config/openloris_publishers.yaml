@@ -1,0 +1,46 @@
+openloris_depth_pointcloud:
+  ros__parameters:
+    image_topic: /d400/aligned_depth_to_color/image_raw
+    camera_info_topic: /d400/aligned_depth_to_color/camera_info
+    pointcloud_topic: /openloris/point_cloud
+    depth_scale: 0.001
+    min_depth: 0.3
+    max_depth: 8.0
+    pixel_stride: 2
+    use_sim_time: true
+
+openloris_imu_merger:
+  ros__parameters:
+    accel_topic: /d400/accel/sample
+    gyro_topic: /d400/gyro/sample
+    imu_topic: /openloris/imu
+    max_accel_age: 0.05
+    accel_variance: 0.01
+    gyro_variance: 0.0001
+    use_sim_time: true
+
+openloris_odometry_tf:
+  ros__parameters:
+    odometry_topic_in: /odom
+    odometry_topic_out: /openloris/odom
+    parent_frame: base_odom
+    child_frame: base_link
+    normalize_to_first_pose: true
+    linear_velocity_variance: 0.005
+    angular_velocity_variance: 0.01
+    position_variance: 0.01
+    orientation_variance: 0.01
+    use_sim_time: true
+
+openloris_ground_truth:
+  ros__parameters:
+    tf_topic_in: /gt
+    source_child_frame: base_link
+    frame_id: map
+    child_frame_id: base_link_gt
+    pose_topic_out: /openloris/ground_truth/pose
+    path_topic_out: /openloris/ground_truth/path
+    normalize_to_first_pose: true
+    publish_tf: true
+    path_min_distance: 0.02
+    use_sim_time: true
