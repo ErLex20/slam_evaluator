@@ -63,6 +63,13 @@ RUN \
     chmod g+rw /opt/unordered_dense
 WORKDIR /root
 # lio_sam END #
+# slam_evaluator START #
+RUN source /opt/dua-venv/bin/activate && \
+    pip install matplotlib --upgrade && \
+    pip install rosbags && \
+    pip install iilabs3d-toolkit && \
+    iilabs3d --install-completion
+# slam_evaluator END #
 # IMAGE SETUP END #
 
 # Create a user with Zsh as shell, hashed password, and add it to the sudoers
