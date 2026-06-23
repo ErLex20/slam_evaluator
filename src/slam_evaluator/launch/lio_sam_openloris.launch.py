@@ -146,7 +146,7 @@ def generate_launch_description():
         DeclareLaunchArgument('namespace', default_value=''),
         DeclareLaunchArgument(
             'bag_path',
-            default_value='/home/neo/workspace/office1-1',
+            default_value='/home/neo/workspace/logs/openloris/office1-1',
             description='Converted OpenLORIS ROS 2 bag directory',
         ),
         DeclareLaunchArgument(
