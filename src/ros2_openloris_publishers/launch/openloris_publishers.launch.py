@@ -82,17 +82,21 @@ def generate_launch_description():
         Node(
             package='tf2_ros',
             executable='static_transform_publisher',
-            name='static_tf_d400_color_to_imu',
+            name='static_tf_base_to_d400_imu',
             parameters=[{'use_sim_time': True}],
             arguments=[
-                '--x', '0.0203127935528755',
-                '--y', '-0.0051032523624599',
-                '--z', '-0.0112013882026076',
-                '--qx', '0.00174536',
-                '--qy', '0.00293073',
-                '--qz', '-0.00191947',
-                '--qw', '0.99999237',
-                '--frame-id', 'd400_color',
+                # Inverse of the calibrated base_link -> d400_imu pose.
+                # dua_robot_localization currently reverses source and target
+                # for IMU vector transforms, so publishing the inverse here
+                # makes its resulting IMU -> base_link rotation correct.
+                '--x', '-0.061159013133332246',
+                '--y', '0.91930388167961319',
+                '--z', '-0.22445689655448128',
+                '--qx', '0.49538006860636924',
+                '--qy', '-0.4995473514230948',
+                '--qz', '0.49840674562280735',
+                '--qw', '0.5065982108450464',
+                '--frame-id', 'base_link',
                 '--child-frame-id', 'd400_imu',
             ],
             output='screen',
@@ -108,8 +112,8 @@ def generate_launch_description():
             '--clock', '100.0',
             '--delay', '2.0',
             '--topics',
-            '/d400/aligned_depth_to_color/camera_info',
-            '/d400/aligned_depth_to_color/image_raw',
+            '/d400/depth/camera_info',
+            '/d400/depth/image_raw',
             '/d400/accel/sample',
             '/d400/gyro/sample',
             '/odom',

@@ -61,8 +61,16 @@
     features:
       k_neighbors: 5
       size:
-        ivox: 0.2
+        ivox: 0.1
         leaf: 0.1
+      classify:
+        edge:
+          dominance: 10.0
+          residual: 0.01
+          isotropy: 0.1
+        surface:
+          planarity: 0.1
+          flatness: 0.1
     loop_closure:
       correction:
         thr:
@@ -87,12 +95,17 @@
       min:
         edge: 10
         surface: 100
-      rpy_weight: 0.01
+      optimization:
+        search_radius:
+          edge: 0.25
+          surface: 0.5
+        degeneracy_threshold: 0.1
+      rpy_weight: 0.0
       surrounding_keyframe:
         adding_threshold:
           angle: 0.1
           distance: 0.1
-        density: 0.2
+        density: 0.1
         search_radius: 30.0
     pose_fix:
       threshold:
@@ -102,7 +115,7 @@
     sensor:
       range:
         max: 5.0   # D400 reliable range ceiling
-        min: 0.3   # keep robot body and close-range noise out
+        min: 0.0   # keep robot body and close-range noise out
     tf:
       frame:
         global: map
@@ -205,28 +218,28 @@
     # vy/vz act as nonholonomic zero constraints, vx/vyaw from wheel encoders.
     odom0:
       topic_name: /openloris/odom
-      config: [false, false, false,        # [x_pos   , y_pos    , z_pos,
-               false, false, false,        #  roll    , pitch    , yaw,
+      config: [true, true, true,        # [x_pos   , y_pos    , z_pos,
+               true, true, true,        #  roll    , pitch    , yaw,
                true, true, true,           #  x_vel   , y_vel    , z_vel,
-               true, true, true,           #  roll_vel, pitch_vel, yaw_vel,
+               false, false, false,           #  roll_vel, pitch_vel, yaw_vel,
                false, false, false]        #  x_accel , y_accel  , z_accel]
       differential: false
       relative: false
       dynamic_tf: false
 
-    # # D400 merged IMU | all angular rates + planar linear acceleration.
-    # # Gravity is removed assuming the robot is level (flat indoor floor).
-    # imu0:
-    #   topic_name: /openloris/imu
-    #   config: [false, false, false,        # [x_pos   , y_pos    , z_pos,
-    #            false, false, false,        #  roll    , pitch    , yaw,
-    #            false, false, false,        #  x_vel   , y_vel    , z_vel,
-    #            true,  true,  true,         #  roll_vel, pitch_vel, yaw_vel,
-    #            true,  true,  true]         #  x_accel , y_accel  , z_accel]
-    #   differential: false
-    #   relative: false
-    #   dynamic_tf: false
-    #   remove_gravitational_acceleration: true
+    # D400 merged IMU | all angular rates + planar linear acceleration.
+    # Gravity is removed assuming the robot is level (flat indoor floor).
+    imu0:
+      topic_name: /openloris/imu
+      config: [false, false, false,        # [x_pos   , y_pos    , z_pos,
+               false, false, false,        #  roll    , pitch    , yaw,
+               false, false, false,        #  x_vel   , y_vel    , z_vel,
+               true,  true,  true,         #  roll_vel, pitch_vel, yaw_vel,
+               false,  false,  false]         #  x_accel , y_accel  , z_accel]
+      differential: false
+      relative: false
+      dynamic_tf: false
+      remove_gravitational_acceleration: true
 
     # LIO-SAM pose output | full 6-DOF absolute corrections.
     # pose0:

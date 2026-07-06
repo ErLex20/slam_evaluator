@@ -33,6 +33,7 @@ class DepthPointCloudNode(Node):
         self.declare_parameter('min_depth', 0.3)
         self.declare_parameter('max_depth', 8.0)
         self.declare_parameter('pixel_stride', 2)
+        self.declare_parameter('edge_discontinuity_rel', 0.03)
 
         image_topic = str(self.get_parameter('image_topic').value)
         camera_info_topic = str(
@@ -44,6 +45,7 @@ class DepthPointCloudNode(Node):
         self.max_depth = float(self.get_parameter('max_depth').value)
         self.pixel_stride = max(
             1, int(self.get_parameter('pixel_stride').value))
+        self.disc_rel = float(self.get_parameter('edge_discontinuity_rel').value)
 
         reliable_scan_qos = QoSProfile(
             history=QoSHistoryPolicy.KEEP_LAST,
@@ -140,6 +142,23 @@ class DepthPointCloudNode(Node):
             raise ValueError('Depth image dimensions do not match pixel grid')
         return self.grid_u, self.grid_v
 
+    def _discontinuity_mask(self, depth):
+        d = np.where(np.isfinite(depth) & (depth > 0.0), depth, np.nan)
+        jump = np.zeros(d.shape, dtype=np.float32)
+
+        def fold(shifted):
+            nonlocal jump
+            diff = np.abs(d - shifted)
+            jump = np.fmax(jump, np.nan_to_num(diff, nan=0.0))
+
+        s = np.full_like(d, np.nan); s[1:, :]  = d[:-1, :]; fold(s)   # su
+        s = np.full_like(d, np.nan); s[:-1, :] = d[1:, :];  fold(s)   # giu'
+        s = np.full_like(d, np.nan); s[:, 1:]  = d[:, :-1]; fold(s)   # sx
+        s = np.full_like(d, np.nan); s[:, :-1] = d[:, 1:];  fold(s)   # dx
+
+        tau = self.disc_rel * np.nan_to_num(d, nan=0.0)
+        return jump > tau
+
     def _on_image(self, image):
         if self.intrinsics is None:
             if not self.warned_no_calibration:
@@ -160,6 +179,9 @@ class DepthPointCloudNode(Node):
             & (depth >= self.min_depth)
             & (depth <= self.max_depth)
         )
+        if self.disc_rel > 0.0:
+            valid &= ~self._discontinuity_mask(depth)
+
         if not np.any(valid):
             return
 

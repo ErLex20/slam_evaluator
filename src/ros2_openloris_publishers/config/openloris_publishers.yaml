@@ -1,12 +1,13 @@
 openloris_depth_pointcloud:
   ros__parameters:
-    image_topic: /d400/aligned_depth_to_color/image_raw
-    camera_info_topic: /d400/aligned_depth_to_color/camera_info
+    image_topic: /d400/depth/image_raw
+    camera_info_topic: /d400/depth/camera_info
     pointcloud_topic: /openloris/point_cloud
     depth_scale: 0.001
-    min_depth: 0.3
+    min_depth: 0.0
     max_depth: 8.0
-    pixel_stride: 2
+    pixel_stride: 1
+    edge_discontinuity_rel: 0.01
     use_sim_time: true
 
 openloris_imu_merger:
