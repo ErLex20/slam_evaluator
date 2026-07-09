@@ -15,8 +15,12 @@
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>lio_sam</exec_depend>
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>ros2_openloris_publishers</exec_depend>
   <exec_depend>rviz2</exec_depend>
+  <exec_depend>scan_deskewer</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>

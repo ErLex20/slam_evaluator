@@ -33,6 +33,32 @@
       - map
     use_sim_time: true
 
+/scan_deskewer:
+  ros__parameters:
+    dua:
+      tf_server:
+        get_transform: true
+        transform_pose: false
+        wait_servers: true
+    motion:
+      buffer_size: 30
+      gravity: 9.81
+      use_imu: true
+      use_twist: false
+      use_odometry: false
+    pointcloud:
+      from_lasercan: false
+      labels:
+        x: "x"
+        y: "y"
+        z: "z"
+        timestamp: "timestamp"
+    tf:
+      disable: false
+      ignore_stamp: false
+      timeout_ms: 100
+    use_sim_time: true
+
 /lio_sam:
   ros__parameters:
     autostart: true
@@ -62,6 +88,14 @@
       size:
         ivox: 0.2
         leaf: 0.1
+      classify:
+        edge:
+          dominance: 3.0
+          residual: 0.3
+          isotropy: 0.3
+        surface:
+          planarity: 0.2
+          flatness: 0.3
     loop_closure:
       correction:
         thr:
@@ -78,7 +112,7 @@
       history_keyframe:
         fitness_score: 0.3
         search_num: 30
-        search_radius: 10.0
+        search_radius: 1.0
         search_time_diff: 60.0
       leaf_size:
         edge: 0.2
@@ -86,6 +120,11 @@
       min:
         edge: 10
         surface: 100
+      optimization:
+        search_radius:
+          edge: 0.5
+          surface: 1.0
+        degeneracy_threshold: 0.0
       rpy_weight: 0.0
       surrounding_keyframe:
         adding_threshold:
@@ -100,8 +139,11 @@
       use_elevation: true
     sensor:
       range:
-        max: 40.0   # Livox Mid-360 (40 m @ 10% reflectivity)
-        min: 0.5    # keep robot body and near-field returns out
+        max: 100.0
+        min: 0.5
+    subscribers:
+      depth: 10
+      slop: 0.1
     tf:
       frame:
         global: "map"
@@ -224,7 +266,7 @@
                false, false, false,        #  roll    , pitch    , yaw,
                false, false, false,        #  x_vel   , y_vel    , z_vel,
                true,  true,  true,         #  roll_vel, pitch_vel, yaw_vel,
-               true,  true,  false]        #  x_accel , y_accel  , z_accel]
+               false,  false,  false]        #  x_accel , y_accel  , z_accel]
       differential: false
       relative: false
       dynamic_tf: false

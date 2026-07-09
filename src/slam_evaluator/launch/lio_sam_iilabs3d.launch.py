@@ -159,6 +159,38 @@ def generate_launch_description():
     )
     ld.add_action(dua_tf_server)
 
+    lidar_timestamp_ns_to_s = Node(
+        namespace=ns,
+        package='slam_evaluator',
+        executable='pointcloud_field_rescale.py',
+        name='lidar_timestamp_ns_to_s',
+        output='both',
+        parameters=[{'field': 'timestamp', 'scale': 1e-9, 'use_sim_time': True}],
+        remappings=[
+            ('input', lidar_topic),
+            ('output', '/point_cloud/timestamp_fixed'),
+        ],
+    )
+    ld.add_action(lidar_timestamp_ns_to_s)
+
+    scan_deskewer = Node(
+        namespace=ns,
+        package='scan_deskewer',
+        executable='scan_deskewer_app',
+        name='scan_deskewer',
+        emulate_tty=True,
+        shell=True,
+        output='both',
+        parameters=[config],
+        remappings=[
+            ('/get_transform', '/dua_tf_server/get_transform'),
+            ('/input', '/point_cloud/timestamp_fixed'),
+            ('/imu', '/eve/imu/data'),
+            ('/scan_deskewer/output', '/point_cloud/deskewed'),
+        ]
+    )
+    ld.add_action(scan_deskewer)
+
     lio_sam = Node(
         namespace=ns,
         package='lio_sam',
@@ -171,7 +203,7 @@ def generate_launch_description():
         parameters=[config],
         remappings=[
             ('/get_transform', '/dua_tf_server/get_transform'),
-            ('/point_cloud', lidar_topic),
+            ('/point_cloud', '/point_cloud/deskewed'),
             ('/odometry', '/ekf_global/odometry'),
         ]
     )

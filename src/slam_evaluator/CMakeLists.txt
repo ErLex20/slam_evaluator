@@ -39,4 +39,11 @@ install(
     share/${PROJECT_NAME}/
 )
 
+install(
+  PROGRAMS
+    scripts/pointcloud_field_rescale.py
+  DESTINATION
+    lib/${PROJECT_NAME}
+)
+
 ament_package()
