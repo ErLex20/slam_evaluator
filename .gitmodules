@@ -10,3 +10,18 @@
 [submodule "src/FAST_LIO"]
 	path = src/FAST_LIO
 	url = git@github.com:ErLex20/FAST_LIO.git
+[submodule "src/faster-lio"]
+	path = src/faster-lio
+	url = git@github.com:ErLex20/faster-lio.git
+[submodule "src/VoxelMap"]
+	path = src/VoxelMap
+	url = git@github.com:ErLex20/VoxelMap.git
+[submodule "src/glim_ros2"]
+	path = src/glim_ros2
+	url = git@github.com:koide3/glim_ros2.git
+[submodule "src/gtsam_points"]
+	path = src/gtsam_points
+	url = https://github.com/koide3/gtsam_points.git
+[submodule "src/glim"]
+	path = src/glim
+	url = https://github.com/koide3/glim.git

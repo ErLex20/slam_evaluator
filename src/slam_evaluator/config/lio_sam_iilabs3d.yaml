@@ -125,7 +125,6 @@
           edge: 0.5
           surface: 1.0
         degeneracy_threshold: 0.0
-      rpy_weight: 0.0
       surrounding_keyframe:
         adding_threshold:
           angle: 0.5

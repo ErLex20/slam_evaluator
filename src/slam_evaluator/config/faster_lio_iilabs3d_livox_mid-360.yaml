@@ -1,0 +1,68 @@
+# IILABS3D benchmark, Livox Mid-360 sequences.
+#
+# Bag topics:
+#   /eve/lidar3d    sensor_msgs/PointCloud2 (x, y, z, intensity, tag, line, timestamp)
+#                   livox_ros_driver2 format, 'timestamp' is absolute, float64, ns
+#   /eve/imu/data   sensor_msgs/Imu, external IMU (400 Hz)
+#
+# Keep Faster-LIO's Livox/IVox algorithm parameters. Only the topics,
+# PointCloud2 Livox handler, and IILABS3D calibration are adapted for this
+# benchmark.
+
+/**:
+  ros__parameters:
+    use_sim_time: true
+    path_save_en: false
+    runtime_pos_log_enable: false
+    map_file_path: "./faster_lio_iilabs3d.pcd"
+    traj_log_file: "/home/neo/workspace/logs/iilabs/iilabs3d_dataset/benchmark/livox_mid-360/nav_a_diff/results/faster_lio_internal_traj.tum"
+
+    common:
+      lid_topic: "/eve/lidar3d"
+      imu_topic: "/eve/imu/data"
+      time_sync_en: false
+
+    preprocess:
+      lidar_type: 6
+      scan_line: 4
+      blind: 0.5
+      time_scale: 0.001
+
+    mapping:
+      acc_cov: 0.1
+      gyr_cov: 0.1
+      b_acc_cov: 0.0001
+      b_gyr_cov: 0.0001
+      fov_degree: 360.0
+      det_range: 100.0
+      extrinsic_est_en: false
+      # LiDAR pose in the external IMU frame. From calib_livox_mid-360.yaml:
+      # LiDAR z = 0.4612, IMU z = 0.19996 -> 0.26124 m.
+      extrinsic_T: [0.0, 0.0, 0.26124]
+      extrinsic_R: [1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 0.0, 1.0]
+
+    publish:
+      path_publish_en: true
+      scan_publish_en: true
+      dense_publish_en: false
+      scan_bodyframe_pub_en: false
+      scan_effect_pub_en: false
+      tf_world_frame: "camera_init"
+      tf_imu_frame: "body"
+
+    pcd_save:
+      pcd_save_en: false
+      interval: -1
+
+    feature_extract_enable: false
+    point_filter_num: 1
+    max_iteration: 3
+    filter_size_surf: 0.1
+    filter_size_map: 0.3
+    cube_side_length: 1000.0
+
+    ivox_grid_resolution: 0.1
+    ivox_nearby_type: 18
+    esti_plane_threshold: 0.1

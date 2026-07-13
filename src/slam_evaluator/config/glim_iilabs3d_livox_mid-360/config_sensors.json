@@ -1,0 +1,26 @@
+{
+  "sensors": {
+    "imu_acc_noise": 0.01,
+    "imu_gyro_noise": 0.0007,
+    "imu_int_noise": 0.001,
+    "imu_bias_noise": 0.00018,
+
+    "global_shutter_lidar": false,
+    "T_lidar_imu": [
+      0.0,
+      0.0,
+      -0.26124,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "intensity_field": "intensity",
+    "ring_field": "line",
+
+    "autoconf_perpoint_times": true,
+    "autoconf_prefer_frame_time": false,
+    "perpoint_relative_time": false,
+    "perpoint_time_scale": 1e-9
+  }
+}

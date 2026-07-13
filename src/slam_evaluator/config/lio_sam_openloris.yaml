@@ -15,9 +15,11 @@
 #   imu0    /openloris/imu               all angular rates + x/y linear accel (D400 IMU)
 #   pose0   /lio_sam/map_optimization/pose  full 6-DOF absolute corrections from LIO-SAM
 #
-# rpy_weight: 1.0 — unlike IILABS3D (external 6-DoF IMU), the D400 IMU has no
-# reliable orientation output; wheel-odometry roll/pitch constraints are used
-# to keep the planar-robot assumption in the scan-matching optimization.
+# NOTE: the rpy_weight roll/pitch fusion mechanism (transform_update() in
+# map_optimization.cpp) has been removed from LIO-SAM. The planar-robot
+# constraint via wheel-odometry roll/pitch described here is no longer
+# available; if needed again for a wheeled robot, implement it as an
+# explicit hard constraint rather than reviving the weighted slerp.
 
 /dua_tf_server:
   ros__parameters:
@@ -100,7 +102,6 @@
           edge: 0.25
           surface: 0.5
         degeneracy_threshold: 0.1
-      rpy_weight: 0.0
       surrounding_keyframe:
         adding_threshold:
           angle: 0.1
