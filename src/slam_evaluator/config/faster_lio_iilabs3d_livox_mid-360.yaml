@@ -14,6 +14,9 @@
     use_sim_time: true
     path_save_en: false
     runtime_pos_log_enable: false
+    timing:
+      enable: false
+      csv_path: ""
     map_file_path: "./faster_lio_iilabs3d.pcd"
     traj_log_file: "/home/neo/workspace/logs/iilabs/iilabs3d_dataset/benchmark/livox_mid-360/nav_a_diff/results/faster_lio_internal_traj.tum"
 

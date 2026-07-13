@@ -1,6 +1,7 @@
 """Run standalone VoxelMap on the IILABS3D Livox Mid-360 benchmark."""
 
 import os
+from datetime import datetime
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -8,6 +9,7 @@ from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -21,6 +23,8 @@ def generate_launch_description():
         evaluator_share, 'config', 'voxel_map_iilabs3d_livox_mid-360.yaml')
     rviz_config = os.path.join(
         evaluator_share, 'rviz', 'voxel_map_iilabs3d.rviz')
+    timing_filename = (
+        f'voxel_map_{datetime.now().strftime("%Y%m%d_%H%M%S")}_timing.csv')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -31,6 +35,15 @@ def generate_launch_description():
             'gt_file',
             default_value=PathJoinSubstitution([sequence_dir, 'ground_truth.tum'])),
         DeclareLaunchArgument('rviz', default_value='false'),
+        DeclareLaunchArgument(
+            'timing',
+            default_value='true',
+            description='Write normalized preprocess/mapping timing CSV'),
+        DeclareLaunchArgument(
+            'timing_csv',
+            default_value=PathJoinSubstitution([
+                sequence_dir, 'results', timing_filename]),
+            description='Output timing CSV path'),
 
         Node(
             package='ros2_iilabs3d_publishers',
@@ -72,7 +85,11 @@ def generate_launch_description():
             executable='voxel_mapping_odom',
             name='voxel_map',
             output='screen',
-            parameters=[config],
+            parameters=[config, {
+                'timing.enable': ParameterValue(
+                    LaunchConfiguration('timing'), value_type=bool),
+                'timing.csv_path': LaunchConfiguration('timing_csv'),
+            }],
             remappings=[
                 ('/aft_mapped_to_init', '/voxel_map/odometry'),
                 ('/path', '/voxel_map/path'),

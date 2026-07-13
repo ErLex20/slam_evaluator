@@ -1,6 +1,7 @@
 """Run GLIM on the IILABS3D Livox Mid-360 benchmark."""
 
 import os
+from datetime import datetime
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
@@ -8,6 +9,7 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def _glim_node(context):
@@ -30,6 +32,9 @@ def _glim_node(context):
         parameters=[{
             'config_path': config_path,
             'use_sim_time': True,
+            'timing.enable': ParameterValue(
+                LaunchConfiguration('timing'), value_type=bool),
+            'timing.csv_path': LaunchConfiguration('timing_csv'),
         }],
     )]
 
@@ -44,6 +49,8 @@ def generate_launch_description():
 
     rviz_config = os.path.join(
         evaluator_share, 'rviz', 'glim_iilabs3d.rviz')
+    timing_filename = (
+        f'glim_{datetime.now().strftime("%Y%m%d_%H%M%S")}_timing.csv')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -67,6 +74,15 @@ def generate_launch_description():
             'rviz',
             default_value='false',
             description='Start RViz2'),
+        DeclareLaunchArgument(
+            'timing',
+            default_value='true',
+            description='Write normalized preprocess/mapping timing CSV'),
+        DeclareLaunchArgument(
+            'timing_csv',
+            default_value=PathJoinSubstitution([
+                sequence_dir, 'results', timing_filename]),
+            description='Output timing CSV path'),
 
         Node(
             package='ros2_iilabs3d_publishers',

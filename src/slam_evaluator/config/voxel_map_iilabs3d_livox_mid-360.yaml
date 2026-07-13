@@ -41,3 +41,6 @@
     Result:
       write_kitti_log: false
       result_path: ""
+    timing:
+      enable: false
+      csv_path: ""

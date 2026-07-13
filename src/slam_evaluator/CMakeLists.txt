@@ -40,6 +40,11 @@ install(
 )
 
 install(
+  FILES TIMING.md
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
   PROGRAMS
     scripts/pointcloud_field_rescale.py
   DESTINATION

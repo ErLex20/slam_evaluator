@@ -15,6 +15,7 @@ upstream absolute output topics into the /faster_lio namespace and records
 """
 
 import os
+from datetime import datetime
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -23,6 +24,7 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def _faster_lio_node(context):
@@ -37,7 +39,11 @@ def _faster_lio_node(context):
         name='faster_lio',
         emulate_tty=True,
         output='both',
-        parameters=[config],
+        parameters=[config, {
+            'timing.enable': ParameterValue(
+                LaunchConfiguration('timing'), value_type=bool),
+            'timing.csv_path': LaunchConfiguration('timing_csv'),
+        }],
         remappings=[
             ('/Odometry', '/faster_lio/odometry'),
             ('/path', '/faster_lio/path'),
@@ -94,6 +100,20 @@ def generate_launch_description():
         LaunchConfiguration('sensor'),
         LaunchConfiguration('sequence'),
     ])
+
+    timing_filename = (
+        f'faster_lio_{datetime.now().strftime("%Y%m%d_%H%M%S")}_timing.csv')
+    ld.add_action(DeclareLaunchArgument(
+        'timing',
+        default_value='true',
+        description='Write normalized preprocess/mapping timing CSV',
+    ))
+    ld.add_action(DeclareLaunchArgument(
+        'timing_csv',
+        default_value=PathJoinSubstitution([
+            sequence_dir, 'results', timing_filename]),
+        description='Output timing CSV path',
+    ))
 
     ld.add_action(DeclareLaunchArgument(
         'gt_file',

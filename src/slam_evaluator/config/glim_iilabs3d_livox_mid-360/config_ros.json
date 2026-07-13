@@ -6,6 +6,8 @@
     "imu_time_offset": 0.0,
     "points_time_offset": 0.0,
     "acc_scale": 0.0,
+    "timing_enable": false,
+    "timing_csv_path": "",
 
     "imu_frame_id": "glim/imu_link",
     "lidar_frame_id": "glim/lidar3d",
