@@ -1,0 +1,55 @@
+# Faster-LIO on IILABS3D RoboSense RS-Helios-5515 sequences.
+# /eve/lidar3d: RSLidar PointCloud2, absolute float64 `timestamp` in seconds.
+/**:
+  ros__parameters:
+    use_sim_time: true
+    path_save_en: false
+    runtime_pos_log_enable: false
+    timing: {enable: false, csv_path: ""}
+    map_file_path: "./faster_lio_iilabs3d.pcd"
+    traj_log_file: "/home/neo/workspace/logs/iilabs/iilabs3d_dataset/benchmark/robosense_rs-helios-5515/nav_a_diff/results/faster_lio_internal_traj.tum"
+
+    common:
+      lid_topic: "/eve/lidar3d"
+      imu_topic: "/eve/imu/data"
+      time_sync_en: false
+
+    preprocess:
+      lidar_type: 5
+      scan_line: 32
+      blind: 0.5
+      time_scale: 0.001
+
+    mapping:
+      acc_cov: 0.1
+      gyr_cov: 0.1
+      b_acc_cov: 0.0001
+      b_gyr_cov: 0.0001
+      fov_degree: 180.0
+      det_range: 150.0
+      extrinsic_est_en: false
+      # eve/imu_link -> eve/lidar3d
+      extrinsic_T: [0.0, 0.0, 0.27774]
+      extrinsic_R: [1.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0,
+                    0.0, 0.0, 1.0]
+
+    publish:
+      path_publish_en: true
+      scan_publish_en: true
+      dense_publish_en: false
+      scan_bodyframe_pub_en: false
+      scan_effect_pub_en: false
+      tf_world_frame: "camera_init"
+      tf_imu_frame: "body"
+
+    pcd_save: {pcd_save_en: false, interval: -1}
+    feature_extract_enable: false
+    point_filter_num: 3
+    max_iteration: 3
+    filter_size_surf: 0.1
+    filter_size_map: 0.3
+    cube_side_length: 1000.0
+    ivox_grid_resolution: 0.2
+    ivox_nearby_type: 18
+    esti_plane_threshold: 0.1

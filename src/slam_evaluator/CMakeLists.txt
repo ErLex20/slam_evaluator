@@ -39,10 +39,12 @@ install(
     share/${PROJECT_NAME}/
 )
 
-install(
-  FILES TIMING.md
-  DESTINATION share/${PROJECT_NAME}
-)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/TIMING.md")
+  install(
+    FILES TIMING.md
+    DESTINATION share/${PROJECT_NAME}
+  )
+endif()
 
 install(
   PROGRAMS

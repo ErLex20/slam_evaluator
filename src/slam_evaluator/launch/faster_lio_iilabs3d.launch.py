@@ -1,10 +1,7 @@
-"""
-Faster-LIO launch file for the IILABS3D dataset.
+"""Faster-LIO launch file for all IILABS3D benchmark LiDARs.
 
-The current evaluator config covers the Livox Mid-360 benchmark sequences:
-
-  ros2 launch slam_evaluator faster_lio_iilabs3d.launch.py sensor:=livox_mid-360
-  ros2 bag play <sequence_bag> --clock
+Supported sensor values are livox_mid-360, ouster_os1-64,
+robosense_rs-helios-5515, and velodyne_vlp-16.
 
 The evaluator config supplies the dataset-specific LiDAR-to-IMU calibration
 through Faster-LIO's original mapping.extrinsic_T parameter.
@@ -31,6 +28,9 @@ def _faster_lio_node(context):
     pkg_share = get_package_share_directory('slam_evaluator')
     sensor = LaunchConfiguration('sensor').perform(context)
     config = os.path.join(pkg_share, 'config', f'faster_lio_iilabs3d_{sensor}.yaml')
+    if not os.path.isfile(config):
+        raise RuntimeError(
+            f'No Faster-LIO IILABS3D configuration for sensor "{sensor}": {config}')
 
     return [Node(
         namespace=LaunchConfiguration('namespace').perform(context),
@@ -79,7 +79,9 @@ def generate_launch_description():
     ld.add_action(DeclareLaunchArgument(
         'sensor',
         default_value='livox_mid-360',
-        description='LiDAR sensor of the sequence being played',
+        description=(
+            'LiDAR sensor: livox_mid-360, ouster_os1-64, '
+            'robosense_rs-helios-5515, or velodyne_vlp-16'),
     ))
 
     ld.add_action(DeclareLaunchArgument(
