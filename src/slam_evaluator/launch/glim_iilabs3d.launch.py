@@ -1,4 +1,8 @@
-"""Run GLIM on the IILABS3D Livox Mid-360 benchmark."""
+"""Run GLIM on any IILABS3D benchmark LiDAR.
+
+Supported sensor values are livox_mid-360, ouster_os1-64,
+robosense_rs-helios-5515, and velodyne_vlp-16.
+"""
 
 import os
 from datetime import datetime
@@ -60,7 +64,9 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'sensor',
             default_value='livox_mid-360',
-            description='LiDAR sensor (currently configured: livox_mid-360)'),
+            description=(
+                'LiDAR sensor: livox_mid-360, ouster_os1-64, '
+                'robosense_rs-helios-5515, or velodyne_vlp-16')),
         DeclareLaunchArgument(
             'sequence',
             default_value='nav_a_diff',

@@ -1,0 +1,109 @@
+grandtour_publisher:
+  ros__parameters:
+    # Absolute path to one extracted mission directory (contains data/ and
+    # metadata/), e.g. as produced by tools/download_grandtour.py.
+    mission_dir: "/home/neo/workspace/logs/grandtour/SPX-2"
+
+    # Prefix applied to every published frame_id/child_frame_id and TF frame.
+    # Useful to avoid TF collisions when replaying more than one mission.
+    frame_prefix: ""
+
+    # Playback speed multiplier (1.0 = real-time, 0.5 = half speed).
+    playback_rate: 1.0
+    # Publish mission time on /clock so consumers can run with use_sim_time.
+    publish_clock: true
+    # false = publish every message back-to-back as fast as it can be read
+    # (bulk conversion / re-recording), ignoring playback_rate's real-time
+    # pacing.
+    use_wall_clock_pacing: true
+    # Repeat the mission when the timeline is exhausted.
+    loop: false
+    # Seconds to skip from the start of the mission before publishing.
+    start_offset: 0.0
+
+    lidar:
+      enable: true
+      # First candidate present under data/ wins (mirrors the fallback
+      # chain in tools/download_grandtour.py - naming varies per mission).
+      candidates:
+        - "hesai_points_undistorted"
+        - "hesai_points_undistorted_filtered"
+        - "hesai_points"
+      topic: "/grandtour/lidar/points"
+      frame_id_override: ""
+
+    imu:
+      enable: true
+      candidates:
+        - "cpt7_imu"
+        - "stim320_imu"
+        - "anymal_imu"
+      topic: "/grandtour/imu"
+      frame_id_override: ""
+
+    anymal_odometry:
+      enable: true
+      candidates:
+        - "anymal_state_odometry"
+      topic: "/grandtour/anymal/odometry"
+      child_frame_id: "base"
+      publish_tf: false
+      # Translate the odometry parent frame so the robot is at XYZ=0 at the
+      # first lidar scan. Orientation is deliberately left unchanged.
+      normalize_position: true
+
+    anymal_state:
+      enable: true
+      candidates:
+        - "anymal_state_state_estimator"
+      odometry_topic: "/grandtour/anymal/state_odometry"
+      joint_state_topic: "/grandtour/anymal/joint_states"
+      child_frame_id: "base"
+      publish_tf: false
+
+    ground_truth_odometry:
+      enable: true
+      candidates:
+        - "cpt7_ie_tc_odometry"
+      topic: "/grandtour/gt/odometry"
+      child_frame_id: "cpt7_imu"
+      publish_tf: false
+
+    prism_position:
+      # Independent position-only reference from the Leica MS60 total
+      # station. This stream is available on ETH-1 but not every mission.
+      enable: true
+      candidates:
+        - "prism_position"
+      topic: "/grandtour/gt/prism_position"
+
+    ground_truth_tf:
+      # Off by default: cpt7_imu already has a static parent (box_base) in
+      # metadata/tf.yaml, so also broadcasting enu_origin -> cpt7_imu here
+      # gives it two TF parents. Use /grandtour/gt/odometry (above) for
+      # ground truth instead; only enable this if you rewire the static
+      # tree accordingly.
+      enable: false
+      candidates:
+        - "cpt7_ie_tc_tf"
+      parent_frame_id: "enu_origin"
+
+    static_tf:
+      enable: true
+
+    ground_truth_alignment:
+      # One-shot static odom -> enu_origin transform computed at startup
+      # from anymal_odometry + ground_truth_odometry, so ground truth can
+      # be TF-transformed into the SLAM tree's fixed frame (e.g. for an
+      # RViz Odometry/Path display). Best-effort visualization aid, not a
+      # calibrated registration - see grandtour_publisher_node.py.
+      enable: true
+      body_frame_id: "cpt7_imu"
+
+    prism_alignment:
+      # The dataset does not include a leica_total_station -> enu_origin
+      # transform. Fit a rigid transform from all timestamp-matched prism and
+      # NovAtel positions so both raw topics are visible together in RViz.
+      # This is visualization-only because the prism lever arm is unknown.
+      enable: true
+      max_time_difference: 0.01

@@ -1,25 +1,23 @@
-# LIO-SAM configuration for the OpenLORIS-Scene D400 RGB-D/IMU sequences.
+# LIO-SAM on the ETH GrandTour dataset (merged ROS2 bag replay),
+# Hesai XT-32 on the ETH-1 mission.
 #
-# ros2_openloris_publishers supplies:
-#   /openloris/point_cloud          XYZI PointCloud2 from aligned depth, frame d400_color
-#   /openloris/imu                  merged D400 accel + gyro, frame d400_imu
-#   /openloris/odom                 normalized wheel odometry (identity origin)
-#   base_odom -> base_link          wheel-odometry TF
-# The converted bag supplies base_link -> d400_color -> d400_imu via /tf_static.
+# Bag topics used by the launch:
+#   /boxi/hesai/points_undistorted       sensor_msgs/PointCloud2
+#   /boxi/cpt7/imu                       sensor_msgs/Imu
+#   /anymal/state_estimator/odometry     nav_msgs/Odometry
+#   /boxi/inertial_explorer/tc/odometry  nav_msgs/Odometry (ground truth)
+#   /boxi/ap20/prism_position            geometry_msgs/PointStamped (Leica)
+#   /tf_static                           sensor extrinsics
+# The bag adapter republishes normalized ANYmal odometry on
+# /slam_evaluator/grandtour/odometry and broadcasts odom -> base.
 #
-# TF tree (anchored by the launch file):
-#   map [static identity] -> base_odom -> base_link -> d400_color -> d400_imu
+# The launch file adds a static identity map -> odom to complete the tree
+# (mirrors IILABS3D's map -> eve/odom anchor).
 #
-# EKF fusion strategy (mirrors IILABS3D):
-#   odom0   /openloris/odom              velocities only (Segway wheel encoders)
-#   imu0    /openloris/imu               all angular rates + x/y linear accel (D400 IMU)
-#   pose0   /lio_sam/map_optimization/pose  full 6-DOF absolute corrections from LIO-SAM
-#
-# NOTE: the rpy_weight roll/pitch fusion mechanism (transform_update() in
-# map_optimization.cpp) has been removed from LIO-SAM. The planar-robot
-# constraint via wheel-odometry roll/pitch described here is no longer
-# available; if needed again for a wheeled robot, implement it as an
-# explicit hard constraint rather than reviving the weighted slerp.
+# sensor.range values are a first pass for the Hesai XT-32 (medium-range
+# 32-channel mechanical lidar, ~100 m in typical conditions) and are NOT
+# empirically tuned against this dataset yet - adjust if the map looks
+# truncated (raise max) or shows robot self-returns (raise min).
 
 /dua_tf_server:
   ros__parameters:
@@ -31,10 +29,39 @@
     fixed_frame: map
     poses_pub_period: 50
     source_frames:
-      - base_link
+      - base
     target_frames:
       - map
     use_sim_time: true
+
+# /scan_deskewer:
+#   ros__parameters:
+#     dua:
+#       tf_server:
+#         get_transform: true
+#         transform_pose: false
+#         wait_servers: true
+#     motion:
+#       buffer_size: 30
+#       gravity: 9.81
+#       use_imu: true
+#       use_twist: false
+#       use_odometry: false
+#     pointcloud:
+#       from_lasercan: false
+#       labels:
+#         x: "x"
+#         y: "y"
+#         z: "z"
+#         # Absolute epoch seconds (float64) from the recorded PointCloud2:
+#         # scan_deskewer fuses point times against an
+#         # absolute-epoch IMU buffer, not a scan-relative offset.
+#         timestamp: "timestamp"
+#     tf:
+#       disable: false
+#       ignore_stamp: false
+#       timeout_ms: 100
+#     use_sim_time: true
 
 /lio_sam:
   ros__parameters:
@@ -47,13 +74,13 @@
       features:
         edges: true
         surfaces: true
-        normals: false
+        normals: true
       loop_closure:
         correspondences: true
-        scan: false
+        scan: true
       mapping:
         all_points: true
-        normals: false
+        normals: true
         path: true
     dua:
       tf_server:
@@ -64,15 +91,15 @@
       k_neighbors: 5
       size:
         ivox: 0.1
-        leaf: 0.1
+        leaf: 0.05
       classify:
         edge:
-          dominance: 10.0
-          residual: 0.01
-          isotropy: 0.1
+          dominance: 3.0
+          residual: 0.3
+          isotropy: 0.3
         surface:
-          planarity: 0.1
-          flatness: 0.1
+          planarity: 0.2
+          flatness: 0.3
     loop_closure:
       correction:
         thr:
@@ -80,17 +107,17 @@
           rotation: 0.02
     mapping:
       global_map:
-        initial_pose: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        initial_pose: [0.0, 0.0, 0.0, 0.0164, 0.0099, 1.6853]
         leaf_size: 0.01
         path: ""
         pose_density: 1.0
         search_radius: 100.0
         set_pose: false
       history_keyframe:
-        fitness_score: 0.3
+        fitness_score: 0.1
         search_num: 30
-        search_radius: 10.0
-        search_time_diff: 600.0
+        search_radius: 1.0
+        search_time_diff: 60.0
       leaf_size:
         edge: 0.1
         surface: 0.1
@@ -99,28 +126,31 @@
         surface: 100
       optimization:
         search_radius:
-          edge: 0.25
-          surface: 0.5
+          edge: 0.5
+          surface: 1.0
         degeneracy_threshold: 0.0
       surrounding_keyframe:
         adding_threshold:
           angle: 0.1
           distance: 0.1
         density: 0.1
-        search_radius: 30.0
+        search_radius: 300.0
     pose_fix:
       threshold:
         covariance: 1.0
-        distance: 2.0
+        distance: 5.0
       use_elevation: true
     sensor:
       range:
-        max: 5.0   # D400 reliable range ceiling
-        min: 0.0   # keep robot body and close-range noise out
+        max: 500.0
+        min: 0.5
+    subscribers:
+      depth: 10
+      slop: 0.1
     tf:
       frame:
-        global: map
-        local: base_odom
+        global: "map"
+        local: "odom"
       prefix: ""
       publish: false
     use_sim_time: true
@@ -186,6 +216,9 @@
     x_correction: 1.0
     y_correction: 1.0
 
+    # grandtour_bag_adapter publishes odom -> base and the launch adds static
+    # base -> base_link bridge; publishing map -> base_link here too would
+    # give base_link two parents.
     publish_tf: false
     publish_acceleration: false
     permit_corrected_publication: false
@@ -195,8 +228,8 @@
     frequency: 30.0
     sensor_timeout: 0.2
 
-    initial_state: [0.0, 0.0, 0.0,          # x, y, z
-                    0.0, 0.0, 0.0,          # R, P, Y
+    initial_state: [0.0, 0.0, 0.0,                  # x, y, z
+                    0.0164, 0.0099, 1.6853,          # R, P, Y
                     0.0, 0.0, 0.0,          # vx, vy, vz
                     0.0, 0.0, 0.0,          # vR, vP, vY
                     0.0, 0.0, 0.0]          # ax, ay, az
@@ -215,34 +248,34 @@
       stamped: false
       timeout: 0.2
 
-    # Wheel odometry (Segway diff drive) | velocities only; matches IILABS3D strategy.
-    # vy/vz act as nonholonomic zero constraints, vx/vyaw from wheel encoders.
+    # ANYmal leg-inertial odometry: pose and linear velocity.
     odom0:
-      topic_name: /openloris/odom
-      config: [true, true, true,        # [x_pos   , y_pos    , z_pos,
-               true, true, true,        #  roll    , pitch    , yaw,
-               true, true, true,           #  x_vel   , y_vel    , z_vel,
-               false, false, false,           #  roll_vel, pitch_vel, yaw_vel,
+      topic_name: /slam_evaluator/grandtour/odometry
+      config: [true, true, true,           # [x_pos   , y_pos    , z_pos,
+               true, true, true,           #  roll    , pitch    , yaw,
+               true, true, true,         #  x_vel   , y_vel    , z_vel,
+               false, false, false,         #  roll_vel, pitch_vel, yaw_vel,
                false, false, false]        #  x_accel , y_accel  , z_accel]
       differential: false
       relative: false
       dynamic_tf: false
 
-    # D400 merged IMU | all angular rates + planar linear acceleration.
-    # Gravity is removed assuming the robot is level (flat indoor floor).
+    # GrandTour IMU: angular velocity is fused; orientation is not fused.
+    # Orientation is not fused: it is magnetometer-based and not aligned with
+    # the map frame.
     imu0:
-      topic_name: /openloris/imu
+      topic_name: /boxi/stim320/imu
       config: [false, false, false,        # [x_pos   , y_pos    , z_pos,
                false, false, false,        #  roll    , pitch    , yaw,
                false, false, false,        #  x_vel   , y_vel    , z_vel,
                true,  true,  true,         #  roll_vel, pitch_vel, yaw_vel,
-               false,  false,  false]         #  x_accel , y_accel  , z_accel]
+               false,  false,  false]        #  x_accel , y_accel  , z_accel]
       differential: false
       relative: false
       dynamic_tf: false
       remove_gravitational_acceleration: true
 
-    # LIO-SAM pose output | full 6-DOF absolute corrections.
+    # # LIO-SAM pose output | x, y, z, roll, pitch, yaw
     # pose0:
     #   topic_name: /lio_sam/map_optimization/pose
     #   config: [true, true, true,           # [x_pos   , y_pos    , z_pos,

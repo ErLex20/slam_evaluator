@@ -48,6 +48,8 @@ endif()
 
 install(
   PROGRAMS
+    scripts/grandtour_bag_adapter.py
+    scripts/grandtour_prism_alignment.py
     scripts/pointcloud_field_rescale.py
   DESTINATION
     lib/${PROJECT_NAME}

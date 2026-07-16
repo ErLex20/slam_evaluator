@@ -1,0 +1,47 @@
+/tf_static:
+  history: keep_last
+  depth: 1
+  reliability: reliable
+  durability: transient_local
+
+/anymal/state_estimator/odometry:
+  history: keep_last
+  depth: 100
+  reliability: reliable
+  durability: volatile
+
+/boxi/inertial_explorer/tc/odometry:
+  history: keep_last
+  depth: 100
+  reliability: reliable
+  durability: volatile
+
+/boxi/ap20/prism_position:
+  history: keep_last
+  depth: 100
+  reliability: reliable
+  durability: volatile
+
+/boxi/cpt7/imu:
+  history: keep_last
+  depth: 100
+  reliability: reliable
+  durability: volatile
+
+/boxi/stim320/imu:
+  history: keep_last
+  depth: 100
+  reliability: reliable
+  durability: volatile
+
+/boxi/hesai/points:
+  history: keep_last
+  depth: 10
+  reliability: reliable
+  durability: volatile
+
+/boxi/hesai/points_undistorted:
+  history: keep_last
+  depth: 10
+  reliability: reliable
+  durability: volatile
