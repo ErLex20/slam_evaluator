@@ -25,3 +25,6 @@
 [submodule "src/glim"]
 	path = src/glim
 	url = https://github.com/koide3/glim.git
+[submodule "src/monocular_depth"]
+	path = src/monocular_depth
+	url = git@github.com:dotX-Automation/monocular_depth.git

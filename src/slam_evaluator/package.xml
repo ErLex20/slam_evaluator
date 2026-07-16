@@ -24,6 +24,7 @@
   <exec_depend>rclpy</exec_depend>
   <exec_depend>rosgraph_msgs</exec_depend>
   <exec_depend>ros2_iilabs3d_publishers</exec_depend>
+  <exec_depend>ros2_grandtour_publishers</exec_depend>
   <exec_depend>ros2_openloris_publishers</exec_depend>
   <exec_depend>rosbag2_transport</exec_depend>
   <exec_depend>rviz2</exec_depend>

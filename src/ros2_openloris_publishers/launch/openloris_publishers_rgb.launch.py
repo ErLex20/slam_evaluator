@@ -1,4 +1,10 @@
-"""OpenLORIS sensor adapters with optional ROS 2 bag playback."""
+"""OpenLORIS sensor adapters for the monocular-depth pipeline.
+
+Same as openloris_publishers.launch.py, minus the depth-camera
+`depth_pointcloud` node: monocular_depth publishes `/openloris/point_cloud`
+from the RGB stream instead, so the depth-camera producer must stay off to
+avoid two publishers racing on the same topic.
+"""
 
 import os
 
@@ -28,13 +34,6 @@ def generate_launch_description():
                 'input_topic': '/clock_raw',
                 'output_topic': '/clock',
             }],
-            output='screen',
-        ),
-        Node(
-            package='ros2_openloris_publishers',
-            executable='depth_pointcloud',
-            name='openloris_depth_pointcloud',
-            parameters=[config],
             output='screen',
         ),
         Node(
@@ -112,8 +111,6 @@ def generate_launch_description():
             '--clock', '100.0',
             '--delay', '2.0',
             '--topics',
-            '/d400/depth/camera_info',
-            '/d400/depth/image_raw',
             '/d400/color/camera_info',
             '/d400/color/image_raw',
             '/d400/accel/sample',

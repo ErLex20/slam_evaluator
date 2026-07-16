@@ -1,0 +1,38 @@
+# monocular_depth configuration for the OpenLORIS-Scene monocular-depth
+# LIO-SAM evaluation (lio_sam_openloris_monodepth.launch.py), DepthAnythingV3
+# architecture (DA3METRIC-LARGE checkpoint).
+#
+# subscriber.camera.topic_name is a fake "image_rect_color" name: the node's
+# camera_info topic derivation (string substitution in subscribers.cpp) only
+# fires on that literal substring. The launch file remaps it to the real
+# /d400/color/image_raw topic; the derived camera_info name already matches
+# the real /d400/color/camera_info topic, so no remap is needed there.
+/monocular_depth:
+  ros__parameters:
+    distance_threshold: 0.0
+    jpeg_quality: 60
+    model:
+      distance_bias: 0.0
+      name: "depth_anything_v3"
+      path: /home/neo/workspace/logs/models/mono-depth/da3metric_large.engine
+      synch: true
+      depth_layer: depth
+      preprocess:
+        mean: [0.485, 0.456, 0.406]
+        std: [0.229, 0.224, 0.225]
+    publisher:
+      point_cloud:
+        active: true
+        gradient_threshold: 0.3
+        step: 1
+    subscriber:
+      camera:
+        active: true
+        topic_name: /d400/color/image_rect_color
+        best_effort_qos: true
+        depth: 5
+        transport: raw
+      visual_targets:
+        active: false
+        topic_name: /visual_targets
+    verbose: false
