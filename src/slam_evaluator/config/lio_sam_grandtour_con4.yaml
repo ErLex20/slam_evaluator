@@ -89,8 +89,8 @@
     features:
       k_neighbors: 5
       size:
-        ivox: 0.1
-        leaf: 0.05
+        ivox: 0.2
+        leaf: 0.1
       classify:
         edge:
           dominance: 3.0
@@ -116,10 +116,10 @@
         fitness_score: 0.1
         search_num: 30
         search_radius: 1.0
-        search_time_diff: 60.0
+        search_time_diff: 600.0
       leaf_size:
-        edge: 0.1
-        surface: 0.1
+        edge: 0.2
+        surface: 0.2
       min:
         edge: 10
         surface: 100
@@ -130,9 +130,9 @@
         degeneracy_threshold: 0.0
       surrounding_keyframe:
         adding_threshold:
-          angle: 0.1
-          distance: 0.1
-        density: 0.1
+          angle: 0.5
+          distance: 0.5
+        density: 0.5
         search_radius: 300.0
     pose_fix:
       threshold:
