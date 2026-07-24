@@ -247,10 +247,10 @@
     # nonholonomic zero constraints, vyaw from the wheel encoders.
     odom0:
       topic_name: /eve/odom
-      config: [false, false, false,        # [x_pos   , y_pos    , z_pos,
-               false, false, false,        #  roll    , pitch    , yaw,
+      config: [true, true, true,        # [x_pos   , y_pos    , z_pos,
+               true, true, true,        #  roll    , pitch    , yaw,
                true,  true,  true,         #  x_vel   , y_vel    , z_vel,
-               false, false, true,         #  roll_vel, pitch_vel, yaw_vel,
+               false, false, false,         #  roll_vel, pitch_vel, yaw_vel,
                false, false, false]        #  x_accel , y_accel  , z_accel]
       differential: false
       relative: false
@@ -272,13 +272,13 @@
       remove_gravitational_acceleration: true
 
     # LIO-SAM pose output | x, y, z, roll, pitch, yaw
-    pose0:
-      topic_name: /lio_sam/map_optimization/pose
-      config: [true, true, true,           # [x_pos   , y_pos    , z_pos,
-               true, true, true,           #  roll    , pitch    , yaw,
-               false, false, false,        #  x_vel   , y_vel    , z_vel,
-               false, false, false,        #  roll_vel, pitch_vel, yaw_vel,
-               false, false, false]        #  x_accel , y_accel  , z_accel]
-      differential: false
-      relative: false
-      dynamic_tf: false
+    # pose0:
+    #   topic_name: /lio_sam/map_optimization/pose
+    #   config: [true, true, true,           # [x_pos   , y_pos    , z_pos,
+    #            true, true, true,           #  roll    , pitch    , yaw,
+    #            false, false, false,        #  x_vel   , y_vel    , z_vel,
+    #            false, false, false,        #  roll_vel, pitch_vel, yaw_vel,
+    #            false, false, false]        #  x_accel , y_accel  , z_accel]
+    #   differential: false
+    #   relative: false
+    #   dynamic_tf: false
