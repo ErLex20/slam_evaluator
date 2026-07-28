@@ -18,6 +18,8 @@ def generate_launch_description():
 
     bag_path = LaunchConfiguration('bag_path')
     play_bag = LaunchConfiguration('play_bag')
+    playback_rate = LaunchConfiguration('playback_rate')
+    publish_depth_cloud = LaunchConfiguration('publish_depth_cloud')
 
     nodes = [
         Node(
@@ -31,9 +33,17 @@ def generate_launch_description():
             output='screen',
         ),
         Node(
+            condition=IfCondition(publish_depth_cloud),
             package='ros2_openloris_publishers',
             executable='depth_pointcloud',
             name='openloris_depth_pointcloud',
+            parameters=[config],
+            output='screen',
+        ),
+        Node(
+            package='ros2_openloris_publishers',
+            executable='stereo_pointcloud',
+            name='openloris_stereo_pointcloud',
             parameters=[config],
             output='screen',
         ),
@@ -59,7 +69,7 @@ def generate_launch_description():
             output='screen',
         ),
         # rosbags-convert cannot preserve ROS 1 latched /tf_static QoS.
-        # Publish the two transforms needed by the RGB-D and IMU pipelines
+        # Publish the transforms needed by the RGB-D, stereo, and IMU pipelines
         # with a native ROS 2 transient-local static broadcaster instead.
         Node(
             package='tf2_ros',
@@ -76,6 +86,24 @@ def generate_launch_description():
                 '--qw', '0.5081504289345848',
                 '--frame-id', 'base_link',
                 '--child-frame-id', 'd400_color',
+            ],
+            output='screen',
+        ),
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='static_tf_base_to_t265_fisheye1',
+            parameters=[{'use_sim_time': True}],
+            arguments=[
+                '--x', '0.23757012582874237',
+                '--y', '-0.038724749600647444',
+                '--z', '0.8950755692783204',
+                '--qx', '-0.4959736284625998',
+                '--qy', '0.4983307159156683',
+                '--qz', '-0.49589211227589786',
+                '--qw', '0.5096740825539087',
+                '--frame-id', 'base_link',
+                '--child-frame-id', 't265_fisheye1',
             ],
             output='screen',
         ),
@@ -111,11 +139,16 @@ def generate_launch_description():
             'ros2', 'bag', 'play', bag_path,
             '--clock', '100.0',
             '--delay', '2.0',
+            '--rate', playback_rate,
             '--topics',
             '/d400/depth/camera_info',
             '/d400/depth/image_raw',
             '/d400/color/camera_info',
             '/d400/color/image_raw',
+            '/t265/fisheye1/camera_info',
+            '/t265/fisheye1/image_raw',
+            '/t265/fisheye2/camera_info',
+            '/t265/fisheye2/image_raw',
             '/d400/accel/sample',
             '/d400/gyro/sample',
             '/odom',
@@ -135,6 +168,16 @@ def generate_launch_description():
             'play_bag',
             default_value='false',
             description='Play bag_path and publish /clock',
+        ),
+        DeclareLaunchArgument(
+            'playback_rate',
+            default_value='1.0',
+            description='Rosbag playback real-time factor (> 0.0)',
+        ),
+        DeclareLaunchArgument(
+            'publish_depth_cloud',
+            default_value='true',
+            description='Publish the D400 depth point cloud',
         ),
         *nodes,
         bag_player,

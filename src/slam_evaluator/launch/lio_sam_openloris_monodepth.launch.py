@@ -19,6 +19,7 @@ is not modified, only its launch-time topic resolution.
 Launch arguments:
   bag_path          Converted OpenLORIS ROS 2 bag directory
   play_bag          Start ros2 bag play (default: true)
+  playback_rate     Rosbag playback real-time factor (default: 1.0)
   rviz              Start RViz2 (default: false)
   record_trajectory Record SLAM output in TUM format (default: true)
   output_dir        Directory for TUM trajectory files
@@ -56,6 +57,7 @@ def generate_launch_description():
     namespace = LaunchConfiguration('namespace')
     bag_path = LaunchConfiguration('bag_path')
     play_bag = LaunchConfiguration('play_bag')
+    playback_rate = LaunchConfiguration('playback_rate')
     use_rviz = LaunchConfiguration('rviz')
     record_trajectory = LaunchConfiguration('record_trajectory')
     output_dir = LaunchConfiguration('output_dir')
@@ -73,6 +75,7 @@ def generate_launch_description():
         launch_arguments={
             'bag_path': bag_path,
             'play_bag': play_bag,
+            'playback_rate': playback_rate,
         }.items(),
     )
 
@@ -182,6 +185,11 @@ def generate_launch_description():
             'play_bag',
             default_value='true',
             description='Start ros2 bag play with the required topics',
+        ),
+        DeclareLaunchArgument(
+            'playback_rate',
+            default_value='1.0',
+            description='Rosbag playback real-time factor (> 0.0)',
         ),
         DeclareLaunchArgument(
             'rviz', default_value='false', description='Start RViz2'),

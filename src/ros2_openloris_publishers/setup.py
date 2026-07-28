@@ -32,6 +32,8 @@ setup(
             'clock_relay = ros2_openloris_publishers.clock_relay_node:main',
             'depth_pointcloud = '
             'ros2_openloris_publishers.depth_pointcloud_node:main',
+            'stereo_pointcloud = '
+            'ros2_openloris_publishers.stereo_pointcloud_main:main',
             'imu_merger = ros2_openloris_publishers.imu_merger_node:main',
             'odometry_tf = ros2_openloris_publishers.odometry_tf_node:main',
             'ground_truth = '
