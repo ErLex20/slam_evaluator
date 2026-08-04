@@ -71,16 +71,16 @@
       loop_closure:       [8, 9, 10, 11]
     debug:
       features:
-        edges: true
-        surfaces: true
-        normals: true
+        edges: false
+        surfaces: false
+        normals: false
       loop_closure:
-        correspondences: true
-        scan: true
+        correspondences: false
+        scan: false
       mapping:
-        all_points: true
-        normals: true
-        path: true
+        all_points: false
+        normals: false
+        path: false
     dua:
       tf_server:
         get_transform: true
@@ -141,7 +141,7 @@
       use_elevation: true
     sensor:
       range:
-        max: 500.0
+        max: 50.0
         min: 0.5
     subscribers:
       depth: 10
